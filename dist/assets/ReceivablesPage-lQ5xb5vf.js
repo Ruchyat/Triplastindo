@@ -1,0 +1,1 @@
+import{x as e}from"./index-CjJneW7y.js";import{a as t,i as n,o as r,r as i}from"./subledger-BnzWCXbO.js";var a=e();function o(){return(0,a.jsx)(r,{kind:`receivable`,cards:n,summary:t,aging:i})}export{o as ReceivablesPage};

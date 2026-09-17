@@ -1,0 +1,1 @@
+import{C as e,E as t}from"./index-CjJneW7y.js";var n=t(e(),1);function r(e=!1){let[t,r]=(0,n.useState)(e);return{isOpen:t,open:(0,n.useCallback)(()=>r(!0),[]),close:(0,n.useCallback)(()=>r(!1),[]),toggle:(0,n.useCallback)(()=>r(e=>!e),[])}}function i(){let[e,t]=(0,n.useState)(null);return{active:e,open:t,close:(0,n.useCallback)(()=>t(null),[])}}export{i as n,r as t};
