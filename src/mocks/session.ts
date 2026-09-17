@@ -1,10 +1,3 @@
-/** Pengguna yang sedang masuk. Diganti hasil endpoint autentikasi Laravel nantinya. */
-export const currentUser = {
-  name: 'Andi Setiawan',
-  role: 'Finance',
-  initials: 'AS',
-}
-
 /** Periode buku yang sedang aktif dan dipakai sebagai filter default. */
 export const activePeriod = {
   label: 'September 2026',

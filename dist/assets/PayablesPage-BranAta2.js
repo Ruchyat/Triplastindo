@@ -1,1 +1,0 @@
-import{x as e}from"./index-CjJneW7y.js";import{n as t,o as n,t as r}from"./subledger-BnzWCXbO.js";var i=e();function a(){return(0,i.jsx)(n,{kind:`payable`,cards:r,summary:t})}export{a as PayablesPage};

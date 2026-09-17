@@ -37,7 +37,11 @@ Sheet ini adalah **sistem akuntansi double-entry** yang dibangun di Google Sheet
 | Scope tahap awal | **Semua 14 modul** |
 | Pengguna | **Multi-user + role** |
 | Data existing | **Mulai kosong** (tidak import jurnal dari sheet) |
-| Stack | *Belum ditentukan* |
+| Frontend | **Vite + React 19 + TypeScript + Tailwind CSS v4** |
+| Backend | **Laravel 13 + PHP 8.5 + MySQL** |
+| Autentikasi | **Laravel Sanctum, token Bearer** |
+| Pendekatan pencatatan | **Transaction-first**, akrual (lihat `triplastindo-catatan-keputusan-proyek.md`) |
+| Peran | Satu kolom `users.role`; matriks izin per modul menyusul |
 
 ---
 
@@ -67,7 +71,7 @@ Sheet ini adalah **sistem akuntansi double-entry** yang dibangun di Google Sheet
              │ Jenis Pembayaran · Profil Perusahaan       │
              └───────────────────┬────────────────────────┘
                                  │
-  Input Transaksi ──► JURNAL UMUM (double-entry, sumber kebenaran) ◄── Jurnal otomatis:
+  Penjualan / Pembelian ─► JURNAL UMUM (double-entry, sumber kebenaran) ◄─ Jurnal otomatis:
   Utang / Piutang ───►        │                                         • Depresiasi bulanan
   Gaji Karyawan ─────►        │                                         • Penutupan laba bulanan
   Bagi Hasil (dividen) ►      │
@@ -99,7 +103,8 @@ Sheet ini adalah **sistem akuntansi double-entry** yang dibangun di Google Sheet
 |---|---|---|---|---|---|
 | Dashboard | R | R | – | R | R |
 | Laporan (LR, Neraca, Arus Kas) | R | R | – | R | R (ringkas) |
-| Input Transaksi / Jurnal | CRUD | CRUD | – | R | – |
+| Transaksi (Penjualan, Pembelian, Pengeluaran, Kas & Bank) | CRUD | CRUD | – | R | – |
+| Jurnal Manual / Jurnal Umum | CRUD | CRUD | – | R | – |
 | Buku Besar | R | R | – | R | – |
 | Utang / Piutang | CRUD | CRUD | – | R | – |
 | Aset & Depresiasi | CRUD | CRUD | – | R | – |
@@ -554,7 +559,8 @@ Kolom: `Bulan`, `Quarter`, `Saldo Kas Akhir`, `Minimum Cash`, `Check Point ✅`,
 
 ## 8. Pertanyaan Terbuka (perlu dikonfirmasi ke pihak Triplastindo)
 
-1. **Stack & hosting**: mau pakai apa, dan di-deploy di mana?
+1. ~~**Stack**~~ — sudah diputuskan, lihat 1.4. **Hosting produksi** masih terbuka:
+   di mana aplikasi akan di-deploy?
 2. **Inventory**: qty kg & nilai persediaan diinput manual, atau harus terhubung otomatis ke jurnal pembelian/penjualan/produksi? Apakah perlu kartu stok per gudang?
 3. **Input Transaksi** di sheet: apakah berupa form (Apps Script / Google Form) atau hanya link ke Jurnal Umum? Template transaksi apa saja yang paling sering dipakai?
 4. **Pemetaan akun depresiasi** untuk Gudang Produksi & Software (lihat 5.13).
@@ -574,7 +580,7 @@ Kolom: `Bulan`, `Quarter`, `Saldo Kas Akhir`, `Minimum Cash`, `Check Point ✅`,
 | Fase | Isi | Keluaran |
 |---|---|---|
 | **1. Fondasi** | Auth, role & permission, profil perusahaan, periode, Setup (COA, kategori, jenis pembayaran, karyawan, aset, pemegang saham), audit log | Master data siap |
-| **2. Core Akuntansi** | Input Transaksi + template, Jurnal Umum, Buku Besar, opening balance, neraca saldo, rekap PPN | Pencatatan jalan |
+| **2. Core Akuntansi** | Penjualan, Pembelian, Pengeluaran, Kas & Bank, posting jurnal otomatis, Jurnal Manual, Jurnal Umum, Buku Besar, opening balance, neraca saldo, rekap PPN | Pencatatan jalan |
 | **3. Laporan** | Laba Rugi (bulanan/YTD/HPP per kg), Neraca + rasio, Arus Kas, print/export | Laporan keuangan |
 | **4. Sub-ledger** | Utang, Piutang, Aset & Depresiasi (+ jurnal otomatis), tutup buku | Modul pendukung |
 | **5. SDM & Pemilik** | Gaji Karyawan, Slip Gaji, Bagi Hasil + approval dividen | Payroll & dividen |
@@ -751,7 +757,7 @@ Kolom: `Bulan`, `Quarter`, `Saldo Kas Akhir`, `Minimum Cash`, `Check Point ✅`,
 | 1 | DASHBOARD | Dashboard | Laporan |
 | 2 | LAPORAN LABA RUGI | Laporan Laba Rugi (+ HPP per Kg) | Laporan |
 | 3 | LAPORAN ARUS KAS | Laporan Arus Kas | Laporan |
-| 4 | JURNAL UMUM | Input Transaksi + Jurnal Umum + Neraca Saldo + Rekap PPN | Input + Laporan |
+| 4 | JURNAL UMUM | Modul transaksi (Penjualan, Pembelian, Pengeluaran, Kas & Bank) + Jurnal Manual + Jurnal Umum + Neraca Saldo + Rekap PPN | Input + Laporan |
 | 5 | LAPORAN NERACA | Laporan Neraca + Rasio + Opening Balance | Laporan |
 | 6 | BUKU BESAR | Buku Besar | Laporan |
 | 7 | BAGI HASIL | Bagi Hasil & Dividen | Input + Approval |

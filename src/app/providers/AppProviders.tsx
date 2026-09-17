@@ -1,12 +1,17 @@
 import type { ReactNode } from 'react'
 import { BrowserRouter } from 'react-router-dom'
+import { AuthProvider } from '@/features/auth/AuthProvider'
 
 /**
- * Tempat memasang provider global aplikasi.
+ * Provider global aplikasi.
  *
- * Saat backend Laravel tersedia, provider autentikasi, periode aktif, dan
- * query client dipasang di sini agar tidak menyebar ke setiap halaman.
+ * AuthProvider berada di dalam BrowserRouter karena halaman login perlu
+ * melakukan navigasi setelah sesi terbentuk.
  */
 export function AppProviders({ children }: { children: ReactNode }) {
-  return <BrowserRouter>{children}</BrowserRouter>
+  return (
+    <BrowserRouter>
+      <AuthProvider>{children}</AuthProvider>
+    </BrowserRouter>
+  )
 }

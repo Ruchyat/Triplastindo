@@ -2,17 +2,20 @@
 
 > Spesifikasi pembuatan **UI web app Finance Triplastindo** berdasarkan kondisi dan struktur modul pada dokumen `triplastindo-finance-webapp.md`.
 >
-> Fokus tahap ini adalah **UI/UX frontend terlebih dahulu**, tanpa implementasi logika akuntansi, posting jurnal, kalkulasi laporan, approval, atau integrasi backend.
+> **Status per 17 September 2026:** seluruh halaman sudah dibuat dan autentikasi sudah
+> tersambung ke API. Logika akuntansi, posting jurnal, kalkulasi laporan, dan approval
+> belum diimplementasikan — halaman modul masih membaca mock data.
 >
-> Target implementasi frontend:
-> - Vite
-> - React.js
-> - Tailwind CSS
-> - shadcn/ui
+> Frontend:
+> - Vite, React 19, TypeScript
+> - Tailwind CSS v4
+> - React Router, Recharts, lucide-react
+> - Komponen dibangun sendiri, tidak memakai shadcn/ui
 >
-> Backend yang akan digunakan pada tahap berikutnya:
-> - Laravel
-> - MariaDB / MySQL
+> Backend:
+> - Laravel 13, PHP 8.5
+> - MySQL
+> - Laravel Sanctum, autentikasi token Bearer
 
 ---
 
@@ -178,149 +181,123 @@ Route:
 
 ## Transaksi
 
-### 6. Input Transaksi
+> Kelompok ini mengikuti pendekatan **transaction-first**. Pengguna mencatat kejadian
+> bisnis; sistem yang membentuk jurnal double-entry. Menu "Input Transaksi" yang meminta
+> akun debit dan kredit sudah tidak dipakai.
 
-Walaupun pada spreadsheet fungsi ini berkaitan langsung dengan Jurnal Umum, pada web dibuat menjadi halaman tersendiri agar proses input lebih mudah.
+### 6. Penjualan
 
-Icon:
+Icon: `Store` · Route: `/sales`
 
-`CirclePlus`
+Invoice penjualan beserta tab Deposit Pelanggan.
 
-Route:
+### 7. Pembelian
 
-```text
-/transactions/create
-```
+Icon: `ShoppingCart` · Route: `/purchases`
 
-### 7. Jurnal Umum
+Tagihan pembelian untuk semua kategori: bahan baku, sparepart, bahan pendukung, dan aset.
 
-Icon:
+### 8. Pengeluaran
 
-`NotebookTabs`
+Icon: `CircleDollarSign` · Route: `/expenses`
 
-Route:
+Biaya yang tidak melalui proses pembelian barang.
 
-```text
-/journals
-```
+### 9. Kas & Bank
+
+Icon: `Banknote` · Route: `/cash-bank`
+
+Penerimaan piutang, pembayaran utang, transfer antar akun, dan mutasi saldo.
+
+### 10. Jurnal Manual
+
+Icon: `NotebookPen` · Route: `/transactions/manual-journal`
+
+Khusus jurnal penyesuaian, koreksi, reklasifikasi, dan jurnal penutup. Bukan jalur
+utama pencatatan transaksi.
+
+### 11. Jurnal Umum
+
+Icon: `NotebookTabs` · Route: `/journals`
 
 ---
 
 ## Keuangan
 
-### 8. Utang
+### 12. Utang
 
-Icon:
+Icon: `HandCoins` · Route: `/payables`
 
-`HandCoins`
+Sub-ledger. Kartu utang terbentuk otomatis dari tagihan pembelian kredit, tidak diinput manual.
 
-Route:
+### 13. Piutang
 
-```text
-/payables
-```
+Icon: `WalletCards` · Route: `/receivables`
 
-### 9. Piutang
+Sub-ledger, beserta kartu umur piutang. Terbentuk otomatis dari invoice penjualan kredit.
 
-Icon:
+### 14. Deposit Pelanggan
 
-`WalletCards`
+Icon: `CircleDollarSign` · Route: `/customer-deposits`
 
-Route:
+Uang titipan customer yang dapat diterima tanpa invoice. Dicatat sebagai kewajiban.
 
-```text
-/receivables
-```
+### 15. Customer
 
-### 10. Bagi Hasil
+Icon: `Store` · Route: `/customers`
 
-Icon:
+Monitoring penjualan, pembayaran, piutang, dan deposit per customer.
 
-`BadgeDollarSign`
+### 16. Supplier
 
-Route:
+Icon: `Truck` · Route: `/suppliers`
 
-```text
-/profit-sharing
-```
+Monitoring pembelian, pembayaran, dan utang per supplier.
+
+### 17. Bagi Hasil
+
+Icon: `BadgeDollarSign` · Route: `/profit-sharing`
 
 ---
 
 ## Operasional
 
-### 11. Summary Inventory & Penjualan
+### 18. Summary Inventory & Penjualan
 
-Icon:
+Icon: `Boxes` · Route: `/inventory-summary`
 
-`Boxes`
+> Inventory masih mengikuti struktur summary yang ada. Belum ada engine inventory terintegrasi.
 
-Route:
+### 19. Aset & Depresiasi
 
-```text
-/inventory-summary
-```
-
-> Pada tahap UI pertama ini, inventory hanya mengikuti struktur summary yang sudah ada pada dokumen. Belum dibuat sistem inventory terintegrasi.
-
-### 12. Aset & Depresiasi
-
-Icon:
-
-`Factory`
-
-Route:
-
-```text
-/assets
-```
+Icon: `Factory` · Route: `/assets`
 
 ---
 
 ## Payroll
 
-### 13. Gaji Karyawan
+### 20. Gaji Karyawan
 
-Icon:
+Icon: `UsersRound` · Route: `/payroll`
 
-`UsersRound`
+### 21. Slip Gaji
 
-Route:
-
-```text
-/payroll
-```
-
-### 14. Slip Gaji
-
-Icon:
-
-`ReceiptText`
-
-Route:
-
-```text
-/payslips
-```
+Icon: `ReceiptText` · Route: `/payslips`
 
 ---
 
 ## Sistem
 
-### 15. Setup
+### 22. Setup
 
-Icon:
+Icon: `Settings` · Route: `/setup`
 
-`Settings`
-
-Route:
-
-```text
-/setup
-```
-
-Setup nantinya memiliki submenu/tab:
+Tab master data:
 
 - Chart of Accounts
+- Customer
+- Supplier
+- Produk & Item
 - Master Aset
 - Master Karyawan
 - Pemegang Saham
@@ -328,6 +305,29 @@ Setup nantinya memiliki submenu/tab:
 - Tahun Buku / Periode
 - Profil Perusahaan
 - Parameter
+
+---
+
+# 4a. Halaman Login
+
+Route: `/login`
+
+Satu-satunya halaman yang dapat diakses tanpa sesi. Seluruh route lain dijaga
+`RequireAuth`; pengunjung tanpa sesi diarahkan ke sini, dan setelah berhasil masuk
+dikembalikan ke alamat yang tadi dituju.
+
+Layout dua kolom pada layar lebar:
+
+- Kiri: panel identitas perusahaan berlatar `#102a43`. Disembunyikan di bawah `lg`.
+- Kanan: form email dan kata sandi.
+
+Ketentuan:
+
+- Tombol nonaktif selama proses kirim dan selama email atau kata sandi masih kosong.
+- Galat dari API ditampilkan sebagai satu kotak peringatan di atas form.
+- Tersedia tombol tampilkan/sembunyikan kata sandi.
+- Selama token tersimpan masih diverifikasi ke server, tampilkan layar "Memeriksa sesi"
+  agar pengguna dengan sesi sah tidak sempat terlempar ke halaman login saat memuat ulang.
 
 ---
 
@@ -565,89 +565,106 @@ Table/card:
 
 ---
 
-# 7. Input Transaksi
+# 7. Jurnal Manual
 
 Route:
 
 ```text
-/transactions/create
+/transactions/manual-journal
 ```
+
+> Halaman ini **bukan** jalur utama pencatatan. Transaksi bisnis dicatat lewat menu
+> Penjualan, Pembelian, Pengeluaran, dan Kas & Bank. Jurnal Manual hanya untuk jurnal
+> penyesuaian, koreksi akuntansi, reklasifikasi akun, dan jurnal penutup oleh Finance.
+>
+> Tampilkan catatan penjelas itu di bagian atas halaman agar pengguna tidak salah masuk.
 
 Gunakan tabs:
 
 ```text
-Transaksi Sederhana
+Jurnal Sederhana
 Jurnal Majemuk
 ```
 
-## 7.1 Transaksi Sederhana
+## 7.1 Jurnal Sederhana
 
 Form:
 
 - Tanggal
+- Jenis Pembayaran
 - Akun Debit
 - Akun Kredit
 - Nominal
-- Jenis Pembayaran
+- Referensi
 - Keterangan
 - No. Hutang
 - No. Piutang
 - Upload Bukti
 
-Button:
-
-```text
-Simpan Transaksi
-```
-
-Tambahkan card:
-
-```text
-Preview Jurnal
-```
-
-Contoh:
+Card **Preview Jurnal** di sampingnya:
 
 | Akun | Debit | Kredit |
 |---|---:|---:|
-| Bank BCA | Rp 10.000.000 | - |
-| Penjualan Tali | - | Rp 10.000.000 |
+| Bank BCA | Rp 10.000.000 | – |
+| Penjualan Tali | – | Rp 10.000.000 |
+| **Selisih** | | **Rp 0** |
 
-Status:
-
-```text
-Balance
-```
-
----
+Indikator `Balance` ditampilkan pada kop card.
 
 ## 7.2 Jurnal Majemuk
 
-Header:
-
-- Tanggal
-- Keterangan
-- Jenis Pembayaran
+Header: Tanggal, Jenis Pembayaran, Keterangan.
 
 Table editable:
 
 | Akun | Keterangan | Debit | Kredit | |
 |---|---|---:|---:|---|
-| ... | ... | ... | ... | Remove |
+| ... | ... | ... | ... | Hapus |
 
-Button:
+Tombol `+ Tambah Baris`.
 
-```text
-+ Tambah Baris
-```
+Footer menampilkan Total Debit, Total Kredit, dan Selisih. **Tombol simpan nonaktif
+selama selisih belum nol** — jurnal tidak seimbang tidak boleh tersimpan.
 
-Footer:
+---
 
-```text
-Total Debit
-Total Kredit
-Selisih
-```
+# 7a. Halaman Transaksi Bisnis
+
+Keempat halaman berikut memakai panel geser (`TransactionDrawer`) yang sama untuk
+membuat dokumen, dengan bagian form yang menyesuaikan jenis dokumennya.
+
+## Penjualan — `/sales`
+
+Dua tab: **Invoice Penjualan** dan **Deposit Pelanggan**.
+
+KPI: Penjualan bulan berjalan, DP & pembayaran diterima, Piutang terbuka, Invoice jatuh tempo.
+
+Tabel invoice: No. Invoice, Tanggal, Customer, Produk, Qty, Total, DP/Deposit, Sisa, Status.
+
+Form invoice:
+
+- Metode pembayaran dibatasi **Cash, Bank, Piutang**.
+- Termin dan jatuh tempo hanya muncul bila metodenya Piutang.
+- Bila Piutang: tampilkan DP diterima, saldo deposit yang dipotong otomatis, dan ringkasan
+  Total Invoice / DP + Deposit / Sisa Piutang.
+- Preview jurnal ditampilkan sebelum dokumen diposting.
+
+## Pembelian — `/purchases`
+
+Satu menu untuk semua kategori: Bahan Baku, Sparepart, Bahan Pendukung, Aset.
+Metode pembayaran dibatasi **Cash, Bank, Utang**.
+
+## Pengeluaran — `/expenses`
+
+Biaya yang tidak melalui pembelian barang. Kolom: No. Bukti, Tanggal, Kategori Biaya,
+Penerima, Nominal, Akun Pembayaran, Status.
+
+## Kas & Bank — `/cash-bank`
+
+Tiga kartu aksi di bagian atas: **Terima Pembayaran**, **Bayar Tagihan**,
+**Transfer Antar Akun**. Pembayaran wajib ditautkan ke invoice atau tagihan asalnya.
+
+Tabel mutasi: Tanggal, Akun, Jenis, Lawan Transaksi, Referensi, Masuk, Keluar.
 
 ---
 
@@ -1577,60 +1594,50 @@ Report:
 
 # 25. Struktur Folder Frontend
 
-Rekomendasi:
+Struktur yang dipakai saat ini. Setiap halaman berada pada berkas sendiri, dan
+komponen khusus satu fitur diletakkan pada `components/` di dalam folder fitur itu.
 
 ```text
 src/
 │
 ├── app/
-│   ├── router/
-│   └── providers/
+│   ├── providers/       AppProviders, AuthProvider dipasang di sini
+│   └── router/          paths.ts, AppRouter, RequireAuth, lazyPages
 │
 ├── components/
-│   ├── ui/
-│   ├── layout/
-│   ├── common/
-│   ├── financial/
-│   └── charts/
+│   ├── ui/              Button, Drawer, TabSwitch
+│   ├── layout/          AppSidebar, Topbar, UserMenu, navigation.ts
+│   ├── common/          PageHeader, Card, MiniStat, Status, FilterBar, form, DataTable
+│   ├── financial/       StatCard, ReportRow, JournalPreview, transaction-drawer/
+│   └── charts/          FinancialTrendChart, StockTrendChart
 │
 ├── features/
-│   ├── dashboard/
-│   ├── transactions/
-│   ├── journals/
-│   ├── ledger/
-│   ├── reports/
-│   │   ├── profit-loss/
-│   │   ├── balance-sheet/
-│   │   └── cash-flow/
-│   ├── payables/
-│   ├── receivables/
-│   ├── inventory/
-│   ├── payroll/
-│   ├── payslips/
-│   ├── assets/
-│   ├── profit-sharing/
+│   ├── auth/            LoginPage, AuthProvider, useAuth
+│   ├── dashboard/       sales/  purchases/  expenses/  cash-bank/
+│   ├── customer-deposits/  customers/  suppliers/
+│   ├── transactions/    ManualJournalPage
+│   ├── journals/  ledger/
+│   ├── reports/         profit-loss/  balance-sheet/  cash-flow/
+│   ├── payables/  receivables/  subledger/
+│   ├── profit-sharing/  inventory/  assets/  payroll/  payslips/
 │   └── setup/
 │
-├── layouts/
-│
-├── lib/
-│
-├── hooks/
-│
-├── services/
-│
-├── mocks/
-│
-└── types/
+├── layouts/             AppLayout
+├── lib/                 cn.ts, format.ts
+├── hooks/               useDisclosure
+├── services/            httpClient, authService, tokenStorage
+├── mocks/               data per domain, terpisah dari tampilan
+└── types/               model bertipe per domain
 ```
 
-Walaupun tahap pertama belum memiliki backend, buat:
+Alias `@/` menunjuk ke `src/`, sehingga impor tidak perlu memakai `../../../`.
 
-```text
-services/
-```
+Aturan yang dijaga:
 
-agar nantinya API Laravel tidak dicampur langsung ke component.
+- Data tidak ditulis langsung di dalam JSX. Semuanya berada di `src/mocks`.
+- Bentuk data mengikuti tipe di `src/types`, agar penggantian mock menjadi API tidak
+  mengubah komponen.
+- Komponen tidak memanggil `fetch` langsung, melainkan lewat `src/services`.
 
 ---
 
@@ -1815,7 +1822,8 @@ Urutan yang direkomendasikan:
 
 ## Tahap 2
 
-- Input Transaksi
+- Penjualan, Pembelian, Pengeluaran, Kas & Bank
+- Jurnal Manual
 - Jurnal Umum
 - Buku Besar
 

@@ -1,6 +1,7 @@
-import { Bell, ChevronDown, Menu, Search } from 'lucide-react'
+import { Bell, Menu, Search } from 'lucide-react'
 import { cn } from '@/lib'
-import { activePeriod, currentUser } from '@/mocks/session'
+import { activePeriod } from '@/mocks/session'
+import { UserMenu } from './UserMenu'
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   return (
@@ -46,16 +47,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           <span className="absolute right-2 top-2 size-2 rounded-full bg-rose-500 ring-2 ring-white" />
         </button>
 
-        <button className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-slate-100">
-          <div className="grid size-8 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
-            {currentUser.initials}
-          </div>
-          <div className="hidden text-left md:block">
-            <p className="text-xs font-semibold text-slate-800">{currentUser.name}</p>
-            <p className="text-[10px] text-slate-500">{currentUser.role}</p>
-          </div>
-          <ChevronDown size={14} className="hidden text-slate-400 md:block" />
-        </button>
+        <UserMenu />
       </div>
     </header>
   )

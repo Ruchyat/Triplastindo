@@ -5,6 +5,9 @@
  * perubahan route tidak perlu dicari manual di banyak berkas.
  */
 export const routePaths = {
+  // Satu-satunya halaman publik.
+  login: '/login',
+
   dashboard: '/dashboard',
 
   // Transaksi bisnis

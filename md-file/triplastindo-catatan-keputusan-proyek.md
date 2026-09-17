@@ -417,42 +417,40 @@ Customer dan Supplier juga menjadi menu mandiri pada sidebar. Menu ini berfungsi
 
 ## 9. Kondisi Terkini Proyek
 
+Diperbarui 17 September 2026.
+
 ### Sudah tersedia
 
-- Frontend Vite dan React.
-- Tailwind CSS.
-- Layout desktop, tablet, dan mobile.
-- Sidebar dan navigasi.
-- Dashboard keuangan.
-- UI laporan keuangan.
-- UI Jurnal Umum dan Buku Besar.
-- UI Utang dan Piutang.
-- UI Aset, Payroll, Slip Gaji, Inventory, Bagi Hasil, dan Setup.
-- Mock data 2026.
-- Build produksi yang berhasil.
+**Frontend**
 
-### Masih menggunakan pendekatan lama
+- Vite, React 19, TypeScript, Tailwind CSS, React Router.
+- Struktur folder berbasis fitur: `app/`, `components/`, `features/`, `lib/`, `services/`, `mocks/`, `types/`.
+- Sidebar sudah mengikuti pendekatan transaction-first.
+- Halaman Penjualan, Pembelian, Pengeluaran, Kas & Bank, dan Deposit Pelanggan.
+- Customer dan Supplier sebagai menu mandiri.
+- Utang dan Piutang sebagai sub-ledger, bukan tempat input transaksi.
+- Jurnal Manual khusus penyesuaian dan koreksi.
+- Halaman login, penjaga route, dan menu keluar.
 
-- Menu Input Transaksi masih meminta akun debit dan kredit.
-- Belum tersedia menu Penjualan.
-- Belum tersedia menu Pembelian.
-- Belum tersedia menu Pengeluaran khusus.
-- Belum tersedia halaman Kas & Bank sebagai pusat penerimaan dan pembayaran.
-- Utang dan Piutang masih terlihat seperti tempat membuat transaksi utama, bukan hasil dari transaksi penjualan atau pembelian.
+**Backend**
+
+- Laravel 13, PHP 8.5, MySQL.
+- Autentikasi token Bearer memakai Laravel Sanctum.
+- Endpoint `POST /api/login`, `GET /api/me`, `POST /api/logout`, `POST /api/logout-all`.
+- Kolom `role` pada tabel user dengan lima peran, serta kolom `is_active` dan `last_login_at`.
+- Akun Super Admin dibuat oleh seeder dengan kredensial dari `.env`.
+- Pembatasan lima percobaan login dan penolakan akun nonaktif.
 
 ### Belum diimplementasikan
 
-- Backend Laravel.
-- Database.
-- API.
-- Autentikasi.
-- Role dan permission.
-- Posting jurnal otomatis.
-- Penyimpanan transaksi.
-- Approval.
-- Audit trail.
-- Closing periode.
+- Penyimpanan transaksi dan posting jurnal otomatis.
+- Kalkulasi akuntansi dan laporan dari data sebenarnya.
+- Matriks hak akses per modul. Peran sudah tersimpan, tetapi belum membatasi apa pun.
+- Approval, audit trail, dan closing periode.
 - Export dan upload sebenarnya.
+
+Seluruh halaman modul masih membaca mock data pada `src/mocks`. Hanya autentikasi yang
+sudah tersambung ke API.
 
 ---
 

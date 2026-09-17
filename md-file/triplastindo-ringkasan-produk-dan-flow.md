@@ -84,45 +84,50 @@ Setup biasanya dilakukan pada awal penggunaan dan diperbarui ketika terdapat per
 
 ### 3.2 Mencatat Transaksi Harian
 
-Finance menggunakan halaman **Input Transaksi** untuk mencatat transaksi.
+Pengguna mencatat **kejadian bisnis**, bukan akun debit dan kredit. Sistem yang
+menerjemahkannya menjadi jurnal double-entry.
 
-Contoh penjualan tali tunai sebesar Rp10.000.000:
+Contoh penjualan tali tunai sebesar Rp10.000.000. Finance membuka menu **Penjualan**
+lalu mengisi customer, produk, kuantitas, harga, dan metode pembayaran. Sistem
+membentuk jurnal berikut di belakang layar:
 
 ```text
 Debit  Bank BCA          Rp10.000.000
 Kredit Penjualan Tali    Rp10.000.000
 ```
 
-Pengguna cukup memilih:
+Bila penjualan dilakukan secara kredit, jurnalnya menjadi:
 
-- Tanggal.
-- Akun debit.
-- Akun kredit.
-- Nominal.
-- Jenis pembayaran.
-- Keterangan.
-- Referensi utang atau piutang jika diperlukan.
-- Lampiran bukti transaksi.
+```text
+Debit  Piutang Usaha     Rp10.000.000
+Kredit Penjualan Tali    Rp10.000.000
+```
 
-Sistem kemudian membuat dua baris jurnal secara otomatis.
+Preview jurnal tetap ditampilkan pada form, sehingga Finance dapat memeriksa hasilnya
+sebelum dokumen diposting.
 
-Untuk transaksi yang melibatkan lebih dari dua akun, pengguna dapat memakai **Jurnal Majemuk**.
+### 3.3 Memilih Menu yang Tepat
 
-### 3.3 Menggunakan Modul Khusus
-
-Beberapa aktivitas sebaiknya dicatat melalui modul khusus agar informasi operasional dan jurnal keuangannya tersimpan bersama.
-
-| Aktivitas | Modul yang Digunakan | Output Utama |
+| Aktivitas | Menu | Jurnal yang dibentuk |
 |---|---|---|
-| Penjualan atau pembelian tunai | Input Transaksi | Jurnal Umum |
-| Pembelian secara kredit | Utang | Kartu utang dan jurnal |
-| Penjualan secara kredit | Piutang | Kartu piutang dan jurnal |
-| Pembayaran gaji | Payroll | Data payroll, jurnal, dan slip gaji |
-| Pembelian mesin atau kendaraan | Aset | Data aset dan jadwal depresiasi |
-| Produksi dan penjualan barang | Inventory & Penjualan | Mutasi stok dan ringkasan penjualan |
-| Pembagian keuntungan | Bagi Hasil | Approval dan alokasi dividen |
+| Penjualan tunai maupun kredit | Penjualan | Pendapatan, lalu Kas/Bank atau Piutang |
+| Pembelian tunai maupun kredit | Pembelian | Persediaan/Beban/Aset, lalu Kas/Bank atau Utang |
+| Biaya tanpa pembelian barang | Pengeluaran | Beban dan Kas/Bank |
+| Pelunasan invoice atau tagihan | Kas & Bank | Piutang atau Utang berkurang |
+| Transfer antar rekening | Kas & Bank | Mutasi antar akun Kas & Bank |
+| Uang titipan customer | Deposit Pelanggan | Kewajiban Deposit Pelanggan |
+| Pembayaran gaji | Payroll | Beban gaji dan Kas/Bank |
+| Pembelian mesin atau kendaraan | Pembelian, kategori Aset | Aset Tetap |
+| Produksi dan penjualan barang | Inventory & Penjualan | Mutasi stok |
+| Pembagian keuntungan | Bagi Hasil | Dividen dan Kas/Bank |
+| Penyesuaian dan koreksi | Jurnal Manual | Sesuai jurnal yang disusun Finance |
 
-Modul khusus tersebut menyimpan data operasional dan, pada implementasi akhir, menghasilkan jurnal keuangan secara otomatis.
+Utang dan Piutang **tidak diinput manual**. Keduanya terbentuk otomatis dari dokumen
+pembelian dan penjualan kredit, lalu berkurang ketika pembayarannya dicatat di menu
+Kas & Bank.
+
+Satu customer tidak boleh memiliki saldo deposit dan piutang terbuka secara bersamaan.
+Saat invoice dibuat, saldo deposit dipotong lebih dahulu, dan sisanya baru menjadi piutang.
 
 ### 3.4 Memeriksa Jurnal Umum
 
@@ -330,34 +335,45 @@ Pemilik dan manajemen dapat menggunakan sistem untuk memutuskan:
 
 ## 7. Posisi Pengerjaan Saat Ini
 
-Saat ini proyek baru menyelesaikan **tahap UI frontend dengan mock data**.
+Diperbarui 17 September 2026.
 
-Yang sudah tersedia:
+Proyek sudah melewati tahap UI dan kini memiliki backend dengan autentikasi yang berfungsi.
 
-- Layout aplikasi.
-- Sidebar dengan 15 menu.
-- Dashboard.
-- Halaman seluruh modul.
-- Tabel, filter, form, tab, card, drawer, dan preview laporan.
-- Navigasi desktop dan mobile.
-- Mock data untuk menggambarkan kondisi aplikasi.
+### Sudah tersedia
 
-Yang belum tersedia:
+**Frontend**
 
-- Database.
-- Backend Laravel.
-- Login sebenarnya.
-- Role dan permission sebenarnya.
-- Penyimpanan transaksi.
-- Posting jurnal.
-- Kalkulasi akuntansi.
-- Tutup buku.
-- Approval sebenarnya.
-- Upload lampiran sebenarnya.
-- Export PDF dan Excel sebenarnya.
+- Layout aplikasi, sidebar, dan navigasi desktop maupun mobile.
+- Seluruh halaman modul beserta tabel, filter, form, tab, card, drawer, dan preview laporan.
+- Struktur folder berbasis fitur, komponen yang dapat dipakai ulang, dan mock data terpisah dari tampilan.
+- Halaman login, penjaga route, dan penyimpanan sesi.
+
+**Backend**
+
+- Laravel 13 dengan database MySQL.
+- Autentikasi token Bearer memakai Laravel Sanctum.
+- Akun Super Admin beserta kolom peran pada tabel user.
+- Pembatasan percobaan login dan penolakan akun nonaktif.
+
+**Lingkungan pengembangan**
+
+- Backend, frontend, dan tunnel berjalan permanen tanpa perlu dinyalakan manual.
+- Aplikasi dapat dibuka dari internet melalui domain pengembangan.
+- Rinciannya ada pada dokumen `triplastindo-lingkungan-pengembangan.md`.
+
+### Belum tersedia
+
+- Penyimpanan transaksi dan posting jurnal.
+- Kalkulasi akuntansi dan laporan dari data sebenarnya.
+- Matriks hak akses per modul.
+- Tutup buku dan approval.
+- Upload lampiran, export PDF, dan export Excel.
+- Audit trail.
 - Integrasi dengan bank atau layanan lain.
 
-Dengan demikian, tampilan saat ini sudah dapat digunakan untuk meninjau bentuk produk, tetapi belum dapat dipakai untuk menjalankan kegiatan finance secara nyata.
+Seluruh halaman modul masih membaca mock data. Artinya bentuk produk sudah dapat
+ditinjau dan pengguna sudah dapat masuk ke aplikasi, tetapi kegiatan finance yang
+sebenarnya belum dapat dijalankan.
 
 ---
 
@@ -387,16 +403,18 @@ Go-Live
 
 Urutan implementasi yang disarankan:
 
-1. Finalisasi UI dan alur pengguna.
-2. Susun kontrak API dan database.
-3. Implementasikan autentikasi dan hak akses.
-4. Implementasikan Setup dan master data.
-5. Implementasikan Input Transaksi dan Jurnal Umum.
-6. Implementasikan Buku Besar dan laporan keuangan.
-7. Implementasikan Utang, Piutang, Aset, dan tutup buku.
-8. Implementasikan Payroll, Slip Gaji, dan Bagi Hasil.
-9. Implementasikan Inventory dan Dashboard aktual.
-10. Validasi hasil aplikasi terhadap Google Sheet.
+1. ~~Finalisasi UI dan alur pengguna.~~ **Selesai.**
+2. ~~Implementasikan autentikasi.~~ **Selesai** — login, token, dan akun Super Admin.
+3. Implementasikan hak akses per modul. Peran sudah tersimpan, tetapi belum membatasi apa pun.
+4. Susun kontrak API dan rancangan database untuk modul transaksi.
+5. Implementasikan Setup dan master data.
+6. Implementasikan Penjualan, Pembelian, Pengeluaran, Kas & Bank, beserta posting jurnal otomatisnya.
+7. Implementasikan Jurnal Umum dan Buku Besar dari data sebenarnya.
+8. Implementasikan laporan keuangan.
+9. Implementasikan Utang, Piutang, Aset, dan tutup buku.
+10. Implementasikan Payroll, Slip Gaji, dan Bagi Hasil.
+11. Implementasikan Inventory dan Dashboard aktual.
+12. Validasi hasil aplikasi terhadap Google Sheet.
 
 ---
 

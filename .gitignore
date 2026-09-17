@@ -1,1 +1,33 @@
+# Dependensi
 node_modules
+
+# Hasil build frontend
+dist
+*.tsbuildinfo
+
+# Artefak kompilasi tsc untuk vite.config.ts di root frontend.
+# Jika ikut ter-commit, Vite memakainya dan mengabaikan vite.config.ts.
+# Sengaja di-anchor ke root agar backend/vite.config.js milik Laravel tetap ter-commit.
+/vite.config.js
+/vite.config.d.ts
+
+# Variabel lingkungan
+.env
+.env.local
+.env.*.local
+
+# Log
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Berkas sistem operasi
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.swp

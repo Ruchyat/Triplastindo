@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { LoginPage } from '@/features/auth/LoginPage'
 import { AppLayout } from '@/layouts/AppLayout'
 import * as pages from './lazyPages'
 import { routePaths } from './paths'
+import { RequireAuth } from './RequireAuth'
 
 /** Pemetaan route ke komponen halamannya. */
 const routes = [
@@ -37,12 +39,17 @@ const routes = [
 export function AppRouter() {
   return (
     <Routes>
-      <Route element={<AppLayout />}>
-        <Route index element={<Navigate to={routePaths.dashboard} replace />} />
-        {routes.map(route => (
-          <Route key={route.path} path={route.path} element={route.element} />
-        ))}
-        <Route path="*" element={<Navigate to={routePaths.dashboard} replace />} />
+      <Route path={routePaths.login} element={<LoginPage />} />
+
+      {/* Seluruh halaman di bawah ini hanya terbuka bagi pengguna yang sudah masuk. */}
+      <Route element={<RequireAuth />}>
+        <Route element={<AppLayout />}>
+          <Route index element={<Navigate to={routePaths.dashboard} replace />} />
+          {routes.map(route => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+          <Route path="*" element={<Navigate to={routePaths.dashboard} replace />} />
+        </Route>
       </Route>
     </Routes>
   )
