@@ -1,1 +1,0 @@
-var e={Draft:`slate`,"Belum Bayar":`slate`,Sebagian:`amber`,Lunas:`green`,"Jatuh Tempo":`red`,Dibatalkan:`slate`};export{e as t};
