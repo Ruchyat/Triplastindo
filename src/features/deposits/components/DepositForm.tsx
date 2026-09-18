@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, Field, InfoNote, Input, Select, Textarea } from '@/components/common'
+import { Card, Combobox, Field, InfoNote, Input, NumberInput, Textarea } from '@/components/common'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency, toAmount } from '@/lib'
 import { depositService } from '@/services/depositService'
@@ -105,19 +105,17 @@ export function DepositForm({
       </Field>
 
       <Field label="Customer" required>
-        <Select
-          className="w-full"
+        <Combobox
+          placeholder="Pilih customer..."
+          options={customers.map(item => ({
+            value: String(item.id),
+            label: item.name,
+            description: item.code,
+          }))}
           value={customerId}
-          onChange={e => setCustomerId(e.target.value)}
+          onChange={setCustomerId}
           disabled={initialCustomerId !== undefined}
-        >
-          <option value="">Pilih customer...</option>
-          {customers.map(item => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </Select>
+        />
       </Field>
 
       {customer && (
@@ -128,28 +126,16 @@ export function DepositForm({
       )}
 
       <Field label={text.amountLabel} required>
-        <Input
-          type="number"
-          min="0"
-          placeholder="0"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-        />
+        <NumberInput prefix="Rp" placeholder="0" value={amount} onChange={setAmount} />
       </Field>
 
       <Field label={text.accountLabel} required>
-        <Select
-          className="w-full"
+        <Combobox
+          placeholder="Pilih akun kas/bank..."
+          options={accounts.map(account => ({ value: String(account.id), label: account.label }))}
           value={cashAccountId}
-          onChange={e => setCashAccountId(e.target.value)}
-        >
-          <option value="">Pilih akun kas/bank...</option>
-          {accounts.map(account => (
-            <option key={account.id} value={account.id}>
-              {account.label}
-            </option>
-          ))}
-        </Select>
+          onChange={setCashAccountId}
+        />
       </Field>
 
       <Field label="No. Referensi">

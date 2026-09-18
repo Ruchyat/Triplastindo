@@ -3,7 +3,7 @@ import { cn } from '@/lib'
 
 type Props = {
   children: ReactNode
-  tone?: 'blue' | 'amber' | 'red'
+  tone?: 'blue' | 'amber' | 'red' | 'green'
   /** `block` berdiri sendiri di halaman, `inset` menempel di dalam kartu. */
   variant?: 'block' | 'inset'
 }
@@ -12,12 +12,14 @@ const tones = {
   blue: 'border-blue-200 bg-blue-50 text-blue-800',
   amber: 'border-amber-200 bg-amber-50 text-amber-800',
   red: 'border-rose-200 bg-rose-50 text-rose-800',
+  green: 'border-emerald-200 bg-emerald-50 text-emerald-800',
 } as const
 
 /**
  * Catatan penjelas aturan bisnis, misalnya cara kerja deposit atau piutang.
  *
- * Nada `red` dipakai untuk pesan penolakan dari backend.
+ * Nada `red` dipakai untuk pesan penolakan dari backend, `green` untuk
+ * konfirmasi bahwa sesuatu sudah tersimpan.
  */
 export function InfoNote({ children, tone = 'blue', variant = 'block' }: Props) {
   return (

@@ -143,3 +143,35 @@ export const NewPurchaseBillPage = lazy(() =>
 export const PurchaseBillPage = lazy(() =>
   import('@/features/purchases/pages/PurchaseBillPage').then(m => ({ default: m.PurchaseBillPage })),
 )
+
+export const NewSupplierPaymentPage = lazy(() =>
+  import('@/features/purchases/pages/NewSupplierPaymentPage').then(m => ({
+    default: m.NewSupplierPaymentPage,
+  })),
+)
+
+export const SupplierPaymentPage = lazy(() =>
+  import('@/features/purchases/pages/SupplierPaymentPage').then(m => ({
+    default: m.SupplierPaymentPage,
+  })),
+)
+
+export const NewExpensePage = lazy(() =>
+  import('@/features/expenses/pages/NewExpensePage').then(m => ({ default: m.NewExpensePage })),
+)
+
+export const ExpensePage = lazy(() =>
+  import('@/features/expenses/pages/ExpensePage').then(m => ({ default: m.ExpensePage })),
+)
+
+export const NewCashTransferPage = lazy(() =>
+  import('@/features/cash-bank/pages/NewCashTransferPage').then(m => ({
+    default: m.NewCashTransferPage,
+  })),
+)
+
+export const CashTransferPage = lazy(() =>
+  import('@/features/cash-bank/pages/CashTransferPage').then(m => ({
+    default: m.CashTransferPage,
+  })),
+)

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Card, Field, InfoNote, Input, SectionHeader, Select, Textarea } from '@/components/common'
+import { Card, Combobox, Field, InfoNote, Input, SectionHeader, Textarea } from '@/components/common'
 import { Button } from '@/components/ui/Button'
 import { useAsync } from '@/hooks/useAsync'
 import { formatCurrency } from '@/lib'
@@ -90,35 +90,27 @@ export function ReceiptForm({
           <Input type="date" value={form.date} onChange={e => form.setDate(e.target.value)} />
         </Field>
         <Field label="Diterima di Akun" required>
-          <Select
-            className="w-full"
+          <Combobox
+            placeholder="Pilih akun kas/bank..."
+            options={accounts.map(account => ({ value: String(account.id), label: account.label }))}
             value={form.cashAccountId}
-            onChange={e => form.setCashAccountId(e.target.value)}
-          >
-            <option value="">Pilih akun kas/bank...</option>
-            {accounts.map(account => (
-              <option key={account.id} value={account.id}>
-                {account.label}
-              </option>
-            ))}
-          </Select>
+            onChange={form.setCashAccountId}
+          />
         </Field>
       </div>
 
       <Field label="Customer" required>
-        <Select
-          className="w-full"
+        <Combobox
+          placeholder="Pilih customer..."
+          options={customers.map(customer => ({
+            value: String(customer.id),
+            label: customer.name,
+            description: customer.code,
+          }))}
           value={customerId}
-          onChange={e => setCustomerId(e.target.value)}
+          onChange={setCustomerId}
           disabled={initialCustomerId !== undefined}
-        >
-          <option value="">Pilih customer...</option>
-          {customers.map(customer => (
-            <option key={customer.id} value={customer.id}>
-              {customer.name}
-            </option>
-          ))}
-        </Select>
+        />
       </Field>
 
       </Card>

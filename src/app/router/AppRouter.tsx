@@ -52,6 +52,12 @@ const documentPages = [
   { path: documentRoutes.depositCard, element: <pages.CustomerDepositPage /> },
   { path: documentRoutes.purchaseBillNew, element: <pages.NewPurchaseBillPage /> },
   { path: documentRoutes.purchaseBill, element: <pages.PurchaseBillPage /> },
+  { path: documentRoutes.supplierPaymentNew, element: <pages.NewSupplierPaymentPage /> },
+  { path: documentRoutes.supplierPayment, element: <pages.SupplierPaymentPage /> },
+  { path: documentRoutes.expenseNew, element: <pages.NewExpensePage /> },
+  { path: documentRoutes.expense, element: <pages.ExpensePage /> },
+  { path: documentRoutes.cashTransferNew, element: <pages.NewCashTransferPage /> },
+  { path: documentRoutes.cashTransfer, element: <pages.CashTransferPage /> },
 ]
 
 /**

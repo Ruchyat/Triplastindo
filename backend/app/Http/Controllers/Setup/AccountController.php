@@ -32,6 +32,11 @@ class AccountController extends Controller
             ->when($request->filled('category_id'), fn ($query) => $query->where('account_category_id', $request->integer('category_id')))
             ->when($request->has('is_active'), fn ($query) => $query->where('is_active', $request->boolean('is_active')))
             ->when($request->boolean('is_cash'), fn ($query) => $query->where('is_cash', true))
+            // `group=beban,hpp` — beberapa kelompok sekaligus, dipisah koma.
+            ->when($request->filled('group'), fn ($query) => $query->whereHas(
+                'category',
+                fn ($category) => $category->whereIn('group', explode(',', $request->string('group')->toString())),
+            ))
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->toString();
                 $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%"));

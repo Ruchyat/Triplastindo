@@ -1,6 +1,7 @@
 import type {
   ApiJournalEntry,
   ApiJournalSummary,
+  JournalEntryPayload,
   Paginated,
   Resource,
 } from '@/types'
@@ -45,6 +46,12 @@ export const journalService = {
 
   async show(id: number): Promise<ApiJournalEntry> {
     const { data } = await http.get<Resource<ApiJournalEntry>>(`/journal-entries/${id}`)
+    return data
+  },
+
+  /** Mencatat jurnal manual. Backend menolak jurnal yang tidak seimbang. */
+  async create(payload: JournalEntryPayload): Promise<ApiJournalEntry> {
+    const { data } = await http.post<Resource<ApiJournalEntry>>('/journal-entries', payload)
     return data
   },
 

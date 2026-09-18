@@ -3,13 +3,18 @@ import {
   EmptyState,
   FilterBar,
   InfoNote,
+  Combobox,
   MiniStat,
-  Select,
   TableWrap,
 } from '@/components/common'
 import { cn, formatCurrency, formatCurrencyOrDash, formatDate, toAmount } from '@/lib'
 import type { DepositFilters } from '@/services/depositService'
 import type { ApiDepositBalance, ApiDepositSummary } from '@/types'
+
+const balanceFilterOptions = [
+  { value: '', label: 'Semua yang pernah berdeposit' },
+  { value: 'balance', label: 'Hanya yang masih bersaldo' },
+]
 
 type Props = {
   balances: ApiDepositBalance[]
@@ -66,15 +71,13 @@ export function DepositBalanceTable({
           searchPlaceholder="Cari customer..."
           onSearchChange={value => onFilterChange({ ...filters, search: value || undefined })}
         >
-          <Select
+          <Combobox
+            className="w-64"
+            aria-label="Filter saldo"
+            options={balanceFilterOptions}
             value={filters.withBalance ? 'balance' : ''}
-            onChange={event =>
-              onFilterChange({ ...filters, withBalance: event.target.value === 'balance' })
-            }
-          >
-            <option value="">Semua yang pernah berdeposit</option>
-            <option value="balance">Hanya yang masih bersaldo</option>
-          </Select>
+            onChange={value => onFilterChange({ ...filters, withBalance: value === 'balance' })}
+          />
         </FilterBar>
 
         {balances.length === 0 && !isLoading ? (

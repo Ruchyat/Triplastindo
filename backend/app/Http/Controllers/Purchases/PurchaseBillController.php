@@ -109,7 +109,11 @@ class PurchaseBillController extends Controller
             ]))
             ->when($request->filled('supplier_id'), fn ($q) => $q->where('supplier_id', $request->integer('supplier_id')))
             ->when($request->filled('category'), fn ($q) => $q->where('category', $request->string('category')->toString()))
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')->toString()))
+            // `outstanding` bukan status tersimpan: gabungan belum bayar dan sebagian,
+            // dipakai halaman Utang/Piutang.
+            ->when($request->filled('status'), fn ($q) => $request->string('status')->toString() === 'outstanding'
+                ? $q->outstanding()
+                : $q->where('status', $request->string('status')->toString()))
             ->when($request->boolean('outstanding'), fn ($q) => $q->outstanding())
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->string('search')->toString();

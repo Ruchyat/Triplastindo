@@ -59,6 +59,12 @@ export const documentRoutes = {
   depositCard: '/customer-deposits/:customerId',
   purchaseBillNew: '/purchases/bills/new',
   purchaseBill: '/purchases/bills/:id',
+  supplierPaymentNew: '/purchases/payments/new',
+  supplierPayment: '/purchases/payments/:id',
+  expenseNew: '/expenses/new',
+  expense: '/expenses/:id',
+  cashTransferNew: '/cash-bank/transfers/new',
+  cashTransfer: '/cash-bank/transfers/:id',
 } as const
 
 /**
@@ -90,4 +96,20 @@ export const toPath = {
 
   purchaseBillNew: () => documentRoutes.purchaseBillNew,
   purchaseBill: (id: number) => `/purchases/bills/${id}`,
+
+  /** `supplierId` dan `billId` mengisi form pembayaran di muka. */
+  supplierPaymentNew: (options: { supplierId?: number; billId?: number } = {}) => {
+    const search = new URLSearchParams()
+    if (options.supplierId) search.set('supplier', String(options.supplierId))
+    if (options.billId) search.set('bill', String(options.billId))
+    const query = search.toString()
+    return query ? `${documentRoutes.supplierPaymentNew}?${query}` : documentRoutes.supplierPaymentNew
+  },
+  supplierPayment: (id: number) => `/purchases/payments/${id}`,
+
+  expenseNew: () => documentRoutes.expenseNew,
+  expense: (id: number) => `/expenses/${id}`,
+
+  cashTransferNew: () => documentRoutes.cashTransferNew,
+  cashTransfer: (id: number) => `/cash-bank/transfers/${id}`,
 }

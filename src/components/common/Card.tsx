@@ -26,11 +26,23 @@ export function CardHeader({ title, description, action }: CardHeaderProps) {
 }
 
 /** Judul bagian tanpa border, dipakai di dalam kartu yang sudah berpadding. */
-export function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+export function SectionHeader({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string
+  subtitle?: string
+  /** Tombol di sisi kanan judul, misalnya tambah data pendukung. */
+  action?: ReactNode
+}) {
   return (
-    <div>
-      <h2 className="text-[15px] font-bold text-slate-900">{title}</h2>
-      {subtitle && <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>}
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h2 className="text-[15px] font-bold text-slate-900">{title}</h2>
+        {subtitle && <p className="mt-0.5 text-xs text-slate-500">{subtitle}</p>}
+      </div>
+      {action}
     </div>
   )
 }

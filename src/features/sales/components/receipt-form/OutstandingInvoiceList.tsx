@@ -1,4 +1,4 @@
-import { Input } from '@/components/common'
+import { NumberInput } from '@/components/common'
 import { cn, formatCurrency, formatDate, toAmount } from '@/lib'
 import type { ApiSalesInvoice } from '@/types'
 import type { ReceiptForm } from './useReceiptForm'
@@ -26,7 +26,7 @@ export function OutstandingInvoiceList({ invoices, form }: Props) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200">
-      <div className="grid grid-cols-[1fr_120px_130px] gap-2 bg-slate-50 px-3 py-2.5 text-[10px] font-bold uppercase text-slate-500">
+      <div className="grid grid-cols-[1fr_130px_160px] gap-2 bg-slate-50 px-3 py-2.5 text-[10px] font-bold uppercase text-slate-500">
         <span>Invoice</span>
         <span className="text-right">Sisa Piutang</span>
         <span className="text-right">Dibayar</span>
@@ -39,7 +39,7 @@ export function OutstandingInvoiceList({ invoices, form }: Props) {
         return (
           <div
             key={invoice.id}
-            className="grid grid-cols-[1fr_120px_130px] items-center gap-2 border-t border-slate-100 p-3"
+            className="grid grid-cols-[1fr_130px_160px] items-center gap-2 border-t border-slate-100 p-3"
           >
             <label className="flex min-w-0 items-center gap-2">
               <input
@@ -63,13 +63,12 @@ export function OutstandingInvoiceList({ invoices, form }: Props) {
               {formatCurrency(toAmount(invoice.outstanding_amount))}
             </span>
 
-            <Input
-              type="number"
-              min="0"
+            <NumberInput
+              prefix="Rp"
               placeholder="0"
               value={form.amounts[invoice.id] ?? ''}
-              onChange={event => form.setAmount(invoice.id, event.target.value)}
-              className={cn('text-right', over && 'border-rose-400 text-rose-700')}
+              onChange={value => form.setAmount(invoice.id, value)}
+              className={cn(over && 'border-rose-400 text-rose-700')}
             />
           </div>
         )

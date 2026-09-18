@@ -34,7 +34,11 @@ class SalesInvoiceController extends Controller
                 $request->string('to')->toString(),
             ))
             ->when($request->filled('customer_id'), fn ($query) => $query->where('customer_id', $request->integer('customer_id')))
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
+            // `outstanding` bukan status tersimpan: gabungan belum bayar dan sebagian,
+            // dipakai halaman Utang/Piutang.
+            ->when($request->filled('status'), fn ($query) => $request->string('status')->toString() === 'outstanding'
+                ? $query->outstanding()
+                : $query->where('status', $request->string('status')->toString()))
             ->when($request->boolean('outstanding'), fn ($query) => $query->outstanding())
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->toString();

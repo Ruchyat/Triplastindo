@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { routePaths } from '@/app/router'
+import { routePaths, toPath } from '@/app/router'
 import { PageHeader } from '@/components/common'
 import { Button } from '@/components/ui/Button'
 import { formatDate } from '@/lib'
@@ -31,6 +31,9 @@ export function PurchaseBillPage() {
       <PurchaseBillDetailView
         detail={detail}
         onDeleted={() => navigate(routePaths.purchases, { replace: true })}
+        onPay={() =>
+          navigate(toPath.supplierPaymentNew({ supplierId: bill?.supplier?.id, billId: bill?.id }))
+        }
       />
     </div>
   )

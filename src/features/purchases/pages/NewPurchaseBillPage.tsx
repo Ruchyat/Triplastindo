@@ -8,6 +8,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useAsync } from '@/hooks/useAsync'
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges'
 import { masterDataService } from '@/services/masterDataService'
+import type { ApiProduct } from '@/types'
 import { PurchaseBillFormView } from '../components/bill-form'
 
 /**
@@ -21,11 +22,16 @@ export function NewPurchaseBillPage() {
   const [isDirty, setIsDirty] = useState(false)
   const guard = useUnsavedChanges(isDirty)
 
+  // Produk yang dibuat dari dalam form, ditambahkan ke daftar tanpa memuat
+  // ulang master data — pemuatan ulang akan mengosongkan form yang sedang diisi.
+  const [createdProducts, setCreatedProducts] = useState<ApiProduct[]>([])
+
   const loadMasterData = useCallback(
     () =>
       Promise.all([
         masterDataService.suppliers(),
         masterDataService.products(),
+        masterDataService.productCategories(),
         masterDataService.purchaseCategories(),
         masterDataService.accounts({ isCash: true }),
         masterDataService.accounts(),
@@ -33,8 +39,18 @@ export function NewPurchaseBillPage() {
     [],
   )
   const master = useAsync(loadMasterData)
-  const [suppliers = [], products = [], categories = [], cashAccounts = [], allAccounts = []] =
-    master.data ?? []
+  const [
+    suppliers = [],
+    loadedProducts = [],
+    productCategories = [],
+    categories = [],
+    cashAccounts = [],
+    allAccounts = [],
+  ] = master.data ?? []
+
+  const products = [...loadedProducts, ...createdProducts].sort((a, b) =>
+    a.name.localeCompare(b.name, 'id'),
+  )
 
   return (
     <div className="space-y-6">
@@ -56,11 +72,13 @@ export function NewPurchaseBillPage() {
         <PurchaseBillFormView
           suppliers={suppliers}
           products={products}
+          productCategories={productCategories}
           categories={categories}
           cashAccounts={cashAccounts}
           allAccounts={allAccounts}
           onCancel={() => navigate(routePaths.purchases)}
           onDirtyChange={setIsDirty}
+          onProductCreated={product => setCreatedProducts(current => [...current, product])}
           onSaved={bill => {
             guard.release()
             navigate(toPath.purchaseBill(bill.id), { replace: true })

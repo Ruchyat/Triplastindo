@@ -1,4 +1,4 @@
-import { Field, InfoNote, Select } from '@/components/common'
+import { Combobox, Field, InfoNote } from '@/components/common'
 import type { ApiAccount } from '@/types'
 import type { PurchaseBillForm } from './usePurchaseBillForm'
 
@@ -20,18 +20,12 @@ export function CategoryChoice({ form, accounts }: Props) {
   return (
     <>
       <Field label="Kategori Pembelian" required>
-        <Select
-          className="w-full"
+        <Combobox
+          placeholder="Pilih kategori..."
+          options={form.categoryOptions}
           value={form.categoryValue}
-          onChange={event => form.selectCategory(event.target.value)}
-        >
-          <option value="">Pilih kategori...</option>
-          {form.categoryOptions.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </Select>
+          onChange={form.selectCategory}
+        />
       </Field>
 
       {category && (
@@ -53,18 +47,12 @@ export function CategoryChoice({ form, accounts }: Props) {
 
       {category?.needs_account_choice && (
         <Field label="Akun Beban" required>
-          <Select
-            className="w-full"
+          <Combobox
+            placeholder="Pilih akun..."
+            options={accounts.map(account => ({ value: String(account.id), label: account.label }))}
             value={form.expenseAccountId}
-            onChange={event => form.setExpenseAccountId(event.target.value)}
-          >
-            <option value="">Pilih akun...</option>
-            {accounts.map(account => (
-              <option key={account.id} value={account.id}>
-                {account.label}
-              </option>
-            ))}
-          </Select>
+            onChange={form.setExpenseAccountId}
+          />
         </Field>
       )}
     </>

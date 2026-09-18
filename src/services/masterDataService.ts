@@ -2,9 +2,12 @@ import type {
   ApiAccount,
   ApiCustomer,
   ApiProduct,
+  ApiProductCategory,
   ApiPurchaseCategory,
   ApiSupplier,
   Collection,
+  ProductPayload,
+  Resource,
 } from '@/types'
 import { http, query } from './httpClient'
 
@@ -15,10 +18,15 @@ import { http, query } from './httpClient'
  * sekaligus lalu disimpan selama halaman terbuka.
  */
 export const masterDataService = {
-  /** Daftar akun COA. `isCash` menyaring akun Kas & Bank saja. */
-  async accounts(options: { isCash?: boolean } = {}): Promise<ApiAccount[]> {
+  /**
+   * Daftar akun COA.
+   *
+   * `isCash` menyaring akun Kas & Bank saja; `groups` menyaring kelompok
+   * tertentu, misalnya `['beban', 'hpp']` untuk form pengeluaran.
+   */
+  async accounts(options: { isCash?: boolean; groups?: string[] } = {}): Promise<ApiAccount[]> {
     const { data } = await http.get<Collection<ApiAccount>>(
-      `/accounts${query({ is_active: true, is_cash: options.isCash })}`,
+      `/accounts${query({ is_active: true, is_cash: options.isCash, group: options.groups?.join(',') })}`,
     )
     return data
   },
@@ -56,6 +64,22 @@ export const masterDataService = {
 
   async products(): Promise<ApiProduct[]> {
     const { data } = await http.get<Collection<ApiProduct>>(`/products${query({ is_active: true })}`)
+    return data
+  },
+
+  async productCategories(): Promise<ApiProductCategory[]> {
+    const { data } = await http.get<Collection<ApiProductCategory>>('/product-categories')
+    return data
+  },
+
+  /**
+   * Menambah produk tanpa meninggalkan form transaksi.
+   *
+   * Barang yang dibeli sering belum ada di master; memaksa pencatat pindah ke
+   * halaman Setup lalu kembali hanya membuat isian tagihannya hilang.
+   */
+  async createProduct(payload: ProductPayload): Promise<ApiProduct> {
+    const { data } = await http.post<Resource<ApiProduct>>('/products', payload)
     return data
   },
 }

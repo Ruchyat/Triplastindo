@@ -1,10 +1,13 @@
 <?php
 
+use App\Exceptions\CashTransferException;
 use App\Exceptions\CustomerDepositException;
+use App\Exceptions\ExpenseException;
 use App\Exceptions\JournalPostingException;
 use App\Exceptions\PaymentReceiptException;
 use App\Exceptions\PurchaseBillException;
 use App\Exceptions\SalesInvoiceException;
+use App\Exceptions\SupplierPaymentException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // serupa: permintaannya sah secara bentuk, tetapi isinya ditolak —
         // dan pesannya sudah berbahasa Indonesia, siap ditampilkan apa adanya.
         $exceptions->render(
-            fn (JournalPostingException|SalesInvoiceException|PaymentReceiptException|CustomerDepositException|PurchaseBillException $e) => response()->json([
+            fn (JournalPostingException|SalesInvoiceException|PaymentReceiptException|CustomerDepositException|PurchaseBillException|SupplierPaymentException|ExpenseException|CashTransferException $e) => response()->json([
                 'message' => $e->getMessage(),
                 'errors' => [],
             ], 422)

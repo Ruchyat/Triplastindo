@@ -1,10 +1,12 @@
+import { useState } from 'react'
 import {
   Card,
   CardHeader,
+  Combobox,
   Field,
   Input,
   MiniStat,
-  Select,
+  NumberInput,
   Status,
   TableWrap,
   Textarea,
@@ -44,18 +46,24 @@ export function DividendDecisionTab() {
   )
 }
 
+const periodOptions = [{ value: 'September 2026', label: 'September 2026' }]
+
 function ProposalForm() {
+  const [total, setTotal] = useState('')
+
   return (
     <Card className="p-5">
       <h2 className="text-sm font-bold text-slate-900">Ajukan Pembagian</h2>
       <div className="mt-5 space-y-4">
         <Field label="Periode">
-          <Select className="w-full">
-            <option>September 2026</option>
-          </Select>
+          <Combobox
+            clearable={false}
+            options={periodOptions}
+            defaultValue={periodOptions[0].value}
+          />
         </Field>
         <Field label="Total Dividen">
-          <Input placeholder="Rp 100.000.000" />
+          <NumberInput prefix="Rp" placeholder="100.000.000" value={total} onChange={setTotal} />
         </Field>
         <Field label="Tanggal Keputusan">
           <Input type="date" />

@@ -1,4 +1,4 @@
-import { Card, EmptyState, FilterBar, MiniStat, Select, Status, TableWrap } from '@/components/common'
+import { Card, Combobox, EmptyState, FilterBar, MiniStat, Status, TableWrap } from '@/components/common'
 import { cn, formatCurrency, formatCurrencyOrDash, formatDate, formatKg, toAmount } from '@/lib'
 import { documentStatusTone, type ApiCustomer, type ApiSalesInvoice, type ApiSalesSummary } from '@/types'
 import type { SalesInvoiceFilters } from '@/services/salesService'
@@ -57,35 +57,30 @@ export function SalesInvoiceTable({
           searchPlaceholder="Cari nomor invoice atau customer..."
           onSearchChange={value => onFilterChange({ ...filters, search: value || undefined })}
         >
-          <Select
-            value={filters.customerId ?? ''}
-            onChange={event =>
-              onFilterChange({
-                ...filters,
-                customerId: event.target.value ? Number(event.target.value) : undefined,
-              })
+          <Combobox
+            className="w-56"
+            aria-label="Filter customer"
+            options={[
+              { value: '', label: 'Semua Customer' },
+              ...customers.map(customer => ({
+                value: String(customer.id),
+                label: customer.name,
+                description: customer.code,
+              })),
+            ]}
+            value={filters.customerId ? String(filters.customerId) : ''}
+            onChange={value =>
+              onFilterChange({ ...filters, customerId: value ? Number(value) : undefined })
             }
-          >
-            <option value="">Semua Customer</option>
-            {customers.map(customer => (
-              <option key={customer.id} value={customer.id}>
-                {customer.name}
-              </option>
-            ))}
-          </Select>
+          />
 
-          <Select
+          <Combobox
+            className="w-44"
+            aria-label="Filter status"
+            options={statusOptions}
             value={filters.status ?? ''}
-            onChange={event =>
-              onFilterChange({ ...filters, status: event.target.value || undefined })
-            }
-          >
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+            onChange={value => onFilterChange({ ...filters, status: value || undefined })}
+          />
         </FilterBar>
 
         {invoices.length === 0 && !isLoading ? (

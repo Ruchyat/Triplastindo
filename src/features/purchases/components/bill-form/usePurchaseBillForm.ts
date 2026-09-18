@@ -95,6 +95,22 @@ export function usePurchaseBillForm(
     )
   }
 
+  /**
+   * Menempatkan produk yang baru dibuat ke baris yang masih kosong, atau ke
+   * baris baru bila semuanya sudah terisi.
+   *
+   * Satuannya diambil dari objek produknya langsung, karena daftar `products`
+   * yang dipegang hook ini baru ikut berubah pada render berikutnya.
+   */
+  function placeProduct(product: ApiProduct) {
+    setItems(current => {
+      const patch = { productId: String(product.id), unit: product.unit }
+      const empty = current.find(item => !item.productId)
+      if (empty) return current.map(item => (item === empty ? { ...item, ...patch } : item))
+      return [...current, { ...emptyItem(Date.now()), ...patch }]
+    })
+  }
+
   /** Mengganti kategori mengosongkan baris, karena bentuk barisnya berubah. */
   function selectCategory(value: string) {
     setCategoryValue(value)
@@ -176,7 +192,7 @@ export function usePurchaseBillForm(
     downPayment, setDownPayment,
     taxAmount, setTaxAmount,
     note, setNote,
-    items, addItem, removeItem, updateItem,
+    items, addItem, removeItem, updateItem, placeProduct,
     isStock, isDeferred, needsCashAccount, dueDate,
     subtotal, total, paidNow,
     payable: Math.max(total - paidNow, 0),

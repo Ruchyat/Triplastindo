@@ -1,0 +1,1 @@
+export { SupplierPaymentDetailView } from './SupplierPaymentDetailView'

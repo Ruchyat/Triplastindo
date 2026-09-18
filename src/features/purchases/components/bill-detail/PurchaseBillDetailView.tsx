@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { routePaths } from '@/app/router'
 import { InfoNote, SectionHeader, Status } from '@/components/common'
+import { JournalEntryCard } from '@/components/financial'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { formatCurrency, formatDate, formatNumber, toAmount } from '@/lib'
@@ -11,10 +10,12 @@ import type { usePurchaseBillDetail } from '../../usePurchaseBillDetail'
 type Props = {
   detail: ReturnType<typeof usePurchaseBillDetail>
   onDeleted: () => void
+  /** Membuka form pembayaran dengan tagihan ini sudah tercentang. */
+  onPay: () => void
 }
 
 /** Detail satu tagihan pembelian beserta tindakannya. */
-export function PurchaseBillDetailView({ detail, onDeleted }: Props) {
+export function PurchaseBillDetailView({ detail, onDeleted, onPay }: Props) {
   const bill = detail.bill
 
   return (
@@ -55,7 +56,7 @@ export function PurchaseBillDetailView({ detail, onDeleted }: Props) {
             {bill.created_at && ` · ${formatDate(bill.created_at)}`}
           </p>
 
-          <BillActions bill={bill} detail={detail} onDeleted={onDeleted} />
+          <BillActions bill={bill} detail={detail} onDeleted={onDeleted} onPay={onPay} />
         </>
       )}
     </div>
@@ -148,49 +149,20 @@ function JournalPanel({ bill }: { bill: ApiPurchaseBill }) {
     )
   }
 
-  return (
-    <div className="overflow-hidden rounded-xl border border-slate-200">
-      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 px-3 py-2">
-        <Link
-          to={`${routePaths.journals}?search=${encodeURIComponent(entry.number)}&month=${entry.date.slice(0, 7)}`}
-          className="text-xs font-bold text-blue-700 underline decoration-blue-200 underline-offset-2"
-        >
-          {entry.number}
-        </Link>
-        <span className="text-[10px] font-bold uppercase text-slate-500">{entry.tagging_label}</span>
-      </div>
-      <table className="w-full text-xs">
-        <tbody>
-          {(entry.lines ?? []).map(line => {
-            const isDebit = toAmount(line.debit) > 0
-            return (
-              <tr key={line.id} className="border-b border-slate-100 last:border-b-0">
-                <td className="w-6 px-3 py-2 font-bold text-slate-400">{isDebit ? 'D' : 'K'}</td>
-                <td className="py-2 pr-3">
-                  <span className="font-semibold text-slate-700">{line.account?.code}</span>
-                  <span className="text-slate-500"> · {line.account?.name}</span>
-                </td>
-                <td className="px-3 py-2 text-right font-semibold tabular-nums text-slate-900">
-                  {formatCurrency(toAmount(isDebit ? line.debit : line.credit))}
-                </td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  )
+  return <JournalEntryCard entry={entry} />
 }
 
 type ActionProps = {
   bill: ApiPurchaseBill
   detail: ReturnType<typeof usePurchaseBillDetail>
   onDeleted: () => void
+  onPay: () => void
 }
 
 /** Tindakan yang tersedia, mengikuti status dokumen. */
-function BillActions({ bill, detail, onDeleted }: ActionProps) {
+function BillActions({ bill, detail, onDeleted, onPay }: ActionProps) {
   const [confirming, setConfirming] = useState<'cancel' | 'delete' | null>(null)
+  const isOutstanding = bill.status === 'unpaid' || bill.status === 'partial'
 
   if (bill.status === 'cancelled') {
     return (
@@ -219,14 +191,21 @@ function BillActions({ bill, detail, onDeleted }: ActionProps) {
             </Button>
           </>
         ) : (
-          <Button
-            variant="outline"
-            className="flex-1"
-            disabled={detail.isWorking}
-            onClick={() => setConfirming('cancel')}
-          >
-            Batalkan Tagihan
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              className="flex-1"
+              disabled={detail.isWorking}
+              onClick={() => setConfirming('cancel')}
+            >
+              Batalkan Tagihan
+            </Button>
+            {isOutstanding && (
+              <Button className="flex-1" onClick={onPay}>
+                Bayar Tagihan
+              </Button>
+            )}
+          </>
         )}
       </div>
 

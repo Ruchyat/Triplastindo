@@ -86,6 +86,19 @@ export type ApiProduct = {
   is_active: boolean
 }
 
+export type ApiProductCategory = {
+  value: string
+  label: string
+}
+
+/** Produk baru; kode boleh kosong, dibuatkan backend. */
+export type ProductPayload = {
+  name: string
+  category: string
+  unit: string
+  code?: string | null
+}
+
 // Jurnal -------------------------------------------------------------------
 
 export type ApiJournalLine = {
@@ -196,6 +209,135 @@ export type ApiSalesInvoice = {
   deposit_applications?: ApiCustomerDeposit[]
 }
 
+// Pengeluaran --------------------------------------------------------------
+
+export type ApiExpense = {
+  id: number
+  number: string
+  date: string
+  expense_account?: ApiAccount
+  cash_account?: ApiAccount
+  payee: string | null
+  description: string
+  amount: string
+  reference: string | null
+  note: string | null
+  status: ApiReceiptStatus
+  status_label: string
+  journal_entry?: ApiJournalEntry
+  created_by?: { id: number; name: string }
+  created_at: string | null
+}
+
+export type ApiExpenseSummary = {
+  total: string
+  production: string
+  operational: string
+  count: number
+}
+
+export type ExpensePayload = {
+  date: string
+  expense_account_id: number
+  cash_account_id: number
+  payee?: string | null
+  description: string
+  amount: string
+  reference?: string | null
+  note?: string | null
+}
+
+// Kas & Bank ---------------------------------------------------------------
+
+export type ApiCashTransfer = {
+  id: number
+  number: string
+  date: string
+  from_account?: ApiAccount
+  to_account?: ApiAccount
+  amount: string
+  reference: string | null
+  note: string | null
+  status: ApiReceiptStatus
+  status_label: string
+  journal_entry?: ApiJournalEntry
+  created_by?: { id: number; name: string }
+  created_at: string | null
+}
+
+export type CashTransferPayload = {
+  date: string
+  from_account_id: number
+  to_account_id: number
+  amount: string
+  reference?: string | null
+  note?: string | null
+}
+
+/** Akun kas/bank beserta saldonya per tanggal tertentu. */
+export type ApiCashAccountBalance = ApiAccount & { balance: string }
+
+/** Satu baris jurnal yang menyentuh akun kas/bank. */
+export type ApiCashMutation = {
+  id: number
+  date: string
+  account: ApiAccount
+  journal_entry_id: number
+  journal_number: string | null
+  source: string | null
+  source_label: string | null
+  source_number: string | null
+  description: string | null
+  debit: string
+  credit: string
+}
+
+// Buku Besar & Neraca Saldo ------------------------------------------------
+
+/** Satu akun pada neraca saldo. Saldo mengikuti saldo normal akunnya. */
+export type ApiTrialBalanceRow = {
+  account: ApiAccount
+  opening_balance: string
+  debit: string
+  credit: string
+  closing_balance: string
+}
+
+export type ApiLedgerLine = {
+  id: number
+  date: string
+  journal_entry_id: number
+  journal_number: string | null
+  source_label: string | null
+  source_number: string | null
+  description: string | null
+  debit: string
+  credit: string
+  balance: string
+}
+
+export type ApiAccountLedger = {
+  account: ApiAccount
+  opening_balance: string
+  total_debit: string
+  total_credit: string
+  closing_balance: string
+  lines: ApiLedgerLine[]
+}
+
+/** Isi permintaan jurnal manual. Nominal dikirim sebagai string, seperti dokumen lain. */
+export type JournalEntryPayload = {
+  date: string
+  description: string
+  payment_method?: string | null
+  lines: {
+    account_code: string
+    debit?: string | null
+    credit?: string | null
+    description?: string | null
+  }[]
+}
+
 // Penerimaan pembayaran ----------------------------------------------------
 
 export type ApiReceiptStatus = 'posted' | 'cancelled'
@@ -233,6 +375,43 @@ export type PaymentReceiptPayload = {
   reference?: string | null
   note?: string | null
   allocations: { sales_invoice_id: number; amount: string }[]
+}
+
+// Pembayaran supplier ------------------------------------------------------
+
+/** Bagian sebuah pembayaran yang dipakai melunasi satu tagihan pembelian. */
+export type ApiSupplierPaymentAllocation = {
+  id: number
+  amount: string
+  bill?: ApiPurchaseBill
+  payment?: ApiSupplierPayment
+}
+
+export type ApiSupplierPayment = {
+  id: number
+  number: string
+  date: string
+  supplier?: ApiSupplier
+  cash_account?: ApiAccount
+  amount: string
+  reference: string | null
+  note: string | null
+  status: ApiReceiptStatus
+  status_label: string
+  journal_entry?: ApiJournalEntry
+  created_by?: { id: number; name: string }
+  created_at: string | null
+  allocations?: ApiSupplierPaymentAllocation[]
+}
+
+/** Isi permintaan pencatatan pembayaran supplier. */
+export type SupplierPaymentPayload = {
+  date: string
+  supplier_id: number
+  cash_account_id: number
+  reference?: string | null
+  note?: string | null
+  allocations: { purchase_bill_id: number; amount: string }[]
 }
 
 // Pembelian ----------------------------------------------------------------

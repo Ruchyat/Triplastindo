@@ -1,11 +1,11 @@
 import { X } from 'lucide-react'
-import { Input, Select } from '@/components/common'
+import { Combobox, Input, NumberInput } from '@/components/common'
 import { cn, formatCurrency, toAmount } from '@/lib'
 import type { ApiProduct } from '@/types'
 import type { PurchaseBillForm } from './usePurchaseBillForm'
 
-const stockColumns = 'grid grid-cols-[1fr_90px_70px_120px_110px_36px] gap-2'
-const expenseColumns = 'grid grid-cols-[1fr_90px_70px_120px_110px_36px] gap-2'
+const stockColumns = 'grid grid-cols-[1fr_100px_70px_150px_120px_36px] gap-2'
+const expenseColumns = 'grid grid-cols-[1fr_100px_70px_150px_120px_36px] gap-2'
 
 /**
  * Baris item tagihan pembelian.
@@ -39,18 +39,17 @@ export function BillItemsTable({ form, products }: { form: PurchaseBillForm; pro
         return (
           <div key={item.key} className={cn(columns, 'items-center border-t border-slate-100 p-3')}>
             {form.isStock ? (
-              <Select
+              <Combobox
                 className="min-w-0"
+                placeholder="Pilih produk..."
+                options={products.map(product => ({
+                  value: String(product.id),
+                  label: product.name,
+                  description: product.code,
+                }))}
                 value={item.productId}
-                onChange={event => form.updateItem(item.key, { productId: event.target.value })}
-              >
-                <option value="">Pilih produk...</option>
-                {products.map(product => (
-                  <option key={product.id} value={product.id}>
-                    {product.name}
-                  </option>
-                ))}
-              </Select>
+                onChange={productId => form.updateItem(item.key, { productId })}
+              />
             ) : (
               <Input
                 placeholder="Keterangan pembelian"
@@ -59,13 +58,11 @@ export function BillItemsTable({ form, products }: { form: PurchaseBillForm; pro
               />
             )}
 
-            <Input
-              type="number"
-              min="0"
-              step="0.001"
+            <NumberInput
+              decimals={3}
               placeholder="0"
               value={item.quantity}
-              onChange={event => form.updateItem(item.key, { quantity: event.target.value })}
+              onChange={quantity => form.updateItem(item.key, { quantity })}
             />
 
             <Input
@@ -73,12 +70,11 @@ export function BillItemsTable({ form, products }: { form: PurchaseBillForm; pro
               onChange={event => form.updateItem(item.key, { unit: event.target.value })}
             />
 
-            <Input
-              type="number"
-              min="0"
-              placeholder="Rp 0"
+            <NumberInput
+              prefix="Rp"
+              placeholder="0"
               value={item.unitPrice}
-              onChange={event => form.updateItem(item.key, { unitPrice: event.target.value })}
+              onChange={unitPrice => form.updateItem(item.key, { unitPrice })}
             />
 
             <span className="text-right text-xs font-semibold tabular-nums text-slate-700">

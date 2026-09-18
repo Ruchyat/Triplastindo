@@ -1,36 +1,45 @@
+import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ArrowDownLeft, ArrowUpRight, Landmark } from 'lucide-react'
-import {
-  Card,
-  CardHeader,
-  FilterBar,
-  MiniStat,
-  PageHeader,
-  Select,
-  Status,
-  TableWrap,
-} from '@/components/common'
-import { TransactionDrawer } from '@/components/financial'
-import { useDrawer } from '@/hooks/useDisclosure'
-import { formatCurrencyOrDash } from '@/lib'
-import { cashBankBalances, cashBankMovements } from '@/mocks/cash-bank'
-import type { CashBankMovement, DocumentType, Tone } from '@/types'
+import { routePaths, toPath } from '@/app/router'
+import { InfoNote, MiniStat, PageHeader } from '@/components/common'
+import { TabSwitch, type TabOption } from '@/components/ui/TabSwitch'
+import { useAsync } from '@/hooks/useAsync'
+import { toAmount } from '@/lib'
+import { cashBankService } from '@/services/cashBankService'
 import { ActionCard } from './components/ActionCard'
+import { CashMutationsTable } from './components/CashMutationsTable'
+import { CashTransfersTable } from './components/CashTransfersTable'
+
+type CashTab = 'mutations' | 'transfers'
+
+const tabs: TabOption<CashTab>[] = [
+  { value: 'mutations', label: 'Mutasi Kas & Bank' },
+  { value: 'transfers', label: 'Transfer Antar Akun' },
+]
 
 /**
  * Halaman Kas & Bank.
  *
- * Pusat penerimaan piutang, pembayaran utang, dan transfer antar akun.
- * Setiap pembayaran ditautkan ke invoice atau tagihan asalnya.
+ * Saldo dan mutasinya dihitung dari jurnal: setiap penerimaan, pembayaran,
+ * pengeluaran, dan transfer yang menyentuh akun kas muncul di sini tanpa
+ * dicatat ulang. Yang dicatat di halaman ini sendiri hanya transfer antar
+ * akun; penerimaan dan pembayaran tetap ditautkan ke dokumen asalnya.
  */
 export function CashBankPage() {
-  const drawer = useDrawer<DocumentType>()
+  const navigate = useNavigate()
+  const [tab, setTab] = useState<CashTab>('mutations')
+
+  const loadBalances = useCallback(() => cashBankService.balances(), [])
+  const balances = useAsync(loadBalances)
+  const accounts = balances.data?.data ?? []
 
   return (
     <div className="space-y-6">
       <PageHeader
         eyebrow="Transaksi / Kas & Bank"
         title="Kas & Bank"
-        description="Pusat penerimaan, pembayaran, transfer, dan saldo rekening"
+        description="Saldo rekening, mutasi dari seluruh modul, dan transfer antar akun"
       />
 
       <div className="grid gap-3 md:grid-cols-3">
@@ -39,86 +48,53 @@ export function CashBankPage() {
           title="Terima Pembayaran"
           description="Catat pelunasan invoice dan kurangi piutang"
           tone="green"
-          onClick={() => drawer.open('receipt')}
+          onClick={() => navigate(toPath.receiptNew())}
         />
         <ActionCard
           icon={<ArrowUpRight size={20} />}
-          title="Bayar Tagihan"
+          title="Bayar Supplier"
           description="Bayar tagihan supplier dan kurangi utang"
           tone="amber"
-          onClick={() => drawer.open('payment')}
+          onClick={() => navigate(toPath.supplierPaymentNew())}
         />
         <ActionCard
           icon={<Landmark size={20} />}
           title="Transfer Antar Akun"
-          description="Pindahkan dana bank atau petty cash"
-          onClick={() => drawer.open('transfer')}
+          description="Pindahkan dana bank atau isi petty cash"
+          onClick={() => navigate(toPath.cashTransferNew())}
         />
       </div>
 
+      {balances.error && <InfoNote tone="red">{balances.error}</InfoNote>}
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <MiniStat label="Bank BCA" value={cashBankBalances.bcaBalance} />
-        <MiniStat label="Bank BNI" value={cashBankBalances.bniBalance} />
-        <MiniStat label="Petty Cash" value={cashBankBalances.pettyCashBalance} />
-        <MiniStat label="Total Kas & Bank" value={cashBankBalances.totalBalance} tone="green" />
+        {accounts.map(account => (
+          <MiniStat
+            key={account.id}
+            label={account.name}
+            value={toAmount(account.balance)}
+            hint={account.code}
+          />
+        ))}
+        <MiniStat
+          label="Total Kas & Bank"
+          value={toAmount(balances.data?.meta.total_balance)}
+          tone="green"
+          hint={balances.data ? `per ${balances.data.meta.as_of}` : undefined}
+        />
       </div>
 
-      <Card>
-        <CardHeader title="Mutasi Kas & Bank" description="Transaksi terbaru dari seluruh akun" />
-        <FilterBar>
-          <Select>
-            <option>Semua Akun</option>
-          </Select>
-          <Select>
-            <option>Semua Jenis</option>
-          </Select>
-          <Select>
-            <option>September 2026</option>
-          </Select>
-        </FilterBar>
+      <TabSwitch options={tabs} value={tab} onChange={setTab} />
 
-        <TableWrap>
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Akun</th>
-              <th>Jenis</th>
-              <th>Lawan Transaksi</th>
-              <th>Referensi</th>
-              <th className="text-right">Masuk</th>
-              <th className="text-right">Keluar</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cashBankMovements.map((movement, index) => (
-              <tr key={`${movement.reference}-${index}`}>
-                <td>{movement.date}</td>
-                <td className="font-semibold">{movement.account}</td>
-                <td>
-                  <Status tone={movementTone(movement)}>{movement.type}</Status>
-                </td>
-                <td>{movement.counterparty}</td>
-                <td className="font-semibold text-blue-700">{movement.reference}</td>
-                <td className="money !text-emerald-700">
-                  {formatCurrencyOrDash(movement.amount > 0 ? movement.amount : 0)}
-                </td>
-                <td className="money !text-rose-700">
-                  {formatCurrencyOrDash(movement.amount < 0 ? Math.abs(movement.amount) : 0)}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </TableWrap>
-      </Card>
-
-      {drawer.active && <TransactionDrawer type={drawer.active} onClose={drawer.close} />}
+      {tab === 'mutations' && (
+        <CashMutationsTable
+          accounts={accounts}
+          onOpenLedger={accountId => navigate(`${routePaths.generalLedger}?account=${accountId}`)}
+        />
+      )}
+      {tab === 'transfers' && (
+        <CashTransfersTable accounts={accounts} onSelect={id => navigate(toPath.cashTransfer(id))} />
+      )}
     </div>
   )
-}
-
-/** Transfer masuk diberi nada hijau agar arah dananya langsung terbaca. */
-function movementTone(movement: CashBankMovement): Tone {
-  if (movement.type === 'Penerimaan') return 'green'
-  if (movement.type === 'Transfer') return movement.amount > 0 ? 'green' : 'blue'
-  return 'amber'
 }

@@ -1,5 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Card, Field, InfoNote, Input, SectionHeader, Select, Textarea } from '@/components/common'
+import { Plus } from 'lucide-react'
+import {
+  Card,
+  Combobox,
+  Field,
+  InfoNote,
+  Input,
+  NumberInput,
+  SectionHeader,
+  Textarea,
+} from '@/components/common'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency, formatDate } from '@/lib'
 import { ApiError } from '@/services/httpClient'
@@ -7,6 +17,7 @@ import { purchaseService } from '@/services/purchaseService'
 import type {
   ApiAccount,
   ApiProduct,
+  ApiProductCategory,
   ApiPurchaseBill,
   ApiPurchaseCategory,
   ApiPurchaseSettlement,
@@ -14,11 +25,13 @@ import type {
 } from '@/types'
 import { BillItemsTable } from './BillItemsTable'
 import { CategoryChoice } from './CategoryChoice'
+import { QuickProductDrawer } from './QuickProductDrawer'
 import { usePurchaseBillForm } from './usePurchaseBillForm'
 
 type Props = {
   suppliers: ApiSupplier[]
   products: ApiProduct[]
+  productCategories: ApiProductCategory[]
   categories: ApiPurchaseCategory[]
   /** Akun Kas & Bank untuk pembayaran. */
   cashAccounts: ApiAccount[]
@@ -27,6 +40,8 @@ type Props = {
   onCancel: () => void
   onSaved: (bill: ApiPurchaseBill) => void
   onDirtyChange?: (isDirty: boolean) => void
+  /** Produk yang baru dibuat dari dalam form, agar halaman menambahkannya ke daftar. */
+  onProductCreated: (product: ApiProduct) => void
 }
 
 const settlementOptions: { value: ApiPurchaseSettlement; label: string }[] = [
@@ -44,16 +59,19 @@ const settlementOptions: { value: ApiPurchaseSettlement; label: string }[] = [
 export function PurchaseBillFormView({
   suppliers,
   products,
+  productCategories,
   categories,
   cashAccounts,
   allAccounts,
   onCancel,
   onSaved,
   onDirtyChange,
+  onProductCreated,
 }: Props) {
   const form = usePurchaseBillForm(categories, products, suppliers)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isAddingProduct, setIsAddingProduct] = useState(false)
 
   useEffect(() => onDirtyChange?.(form.isDirty), [form.isDirty, onDirtyChange])
 
@@ -94,18 +112,16 @@ export function PurchaseBillFormView({
         </div>
 
         <Field label="Supplier" required>
-          <Select
-            className="w-full"
+          <Combobox
+            placeholder="Pilih supplier..."
+            options={suppliers.map(supplier => ({
+              value: String(supplier.id),
+              label: supplier.name,
+              description: supplier.code,
+            }))}
             value={form.supplierId}
-            onChange={e => form.selectSupplier(e.target.value)}
-          >
-            <option value="">Pilih supplier...</option>
-            {suppliers.map(supplier => (
-              <option key={supplier.id} value={supplier.id}>
-                {supplier.name}
-              </option>
-            ))}
-          </Select>
+            onChange={form.selectSupplier}
+          />
         </Field>
 
         <CategoryChoice form={form} accounts={allAccounts} />
@@ -121,6 +137,14 @@ export function PurchaseBillFormView({
                 : 'Kategori beban: setiap baris cukup keterangan.'
               : 'Pilih kategori terlebih dahulu.'
           }
+          action={
+            form.isStock && (
+              <Button variant="outline" onClick={() => setIsAddingProduct(true)}>
+                <Plus size={15} />
+                Produk Baru
+              </Button>
+            )
+          }
         />
         {form.category ? (
           <BillItemsTable form={form} products={products} />
@@ -134,64 +158,49 @@ export function PurchaseBillFormView({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="PPN Masukan">
-            <Input
-              type="number"
-              min="0"
+            <NumberInput
+              prefix="Rp"
               placeholder="0"
               value={form.taxAmount}
-              onChange={e => form.setTaxAmount(e.target.value)}
+              onChange={form.setTaxAmount}
             />
           </Field>
           <Field label="Metode Pembayaran" required>
-            <Select
-              className="w-full"
+            <Combobox
+              clearable={false}
+              options={settlementOptions}
               value={form.settlement}
-              onChange={e => form.setSettlement(e.target.value as ApiPurchaseSettlement)}
-            >
-              {settlementOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
+              onChange={value => form.setSettlement(value as ApiPurchaseSettlement)}
+            />
           </Field>
         </div>
 
         {form.needsCashAccount && (
           <Field label="Dibayar dari Akun" required>
-            <Select
-              className="w-full"
+            <Combobox
+              placeholder="Pilih akun kas/bank..."
+              options={cashAccounts.map(account => ({
+                value: String(account.id),
+                label: account.label,
+              }))}
               value={form.cashAccountId}
-              onChange={e => form.setCashAccountId(e.target.value)}
-            >
-              <option value="">Pilih akun kas/bank...</option>
-              {cashAccounts.map(account => (
-                <option key={account.id} value={account.id}>
-                  {account.label}
-                </option>
-              ))}
-            </Select>
+              onChange={form.setCashAccountId}
+            />
           </Field>
         )}
 
         {form.isDeferred && (
           <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/50 p-4">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Termin (hari)" required>
-                <Input
-                  type="number"
-                  min="0"
-                  value={form.termDays}
-                  onChange={e => form.setTermDays(e.target.value)}
-                />
+              <Field label="Termin" required>
+                <NumberInput suffix="hari" value={form.termDays} onChange={form.setTermDays} />
               </Field>
               <Field label="DP Dibayar">
-                <Input
-                  type="number"
-                  min="0"
+                <NumberInput
+                  prefix="Rp"
                   placeholder="0"
                   value={form.downPayment}
-                  onChange={e => form.setDownPayment(e.target.value)}
+                  onChange={form.setDownPayment}
                 />
               </Field>
             </div>
@@ -234,6 +243,19 @@ export function PurchaseBillFormView({
           {isSaving ? 'Menyimpan...' : 'Simpan & Posting'}
         </Button>
       </div>
+
+      {isAddingProduct && (
+        <QuickProductDrawer
+          categories={productCategories}
+          purchaseCategory={form.categoryValue}
+          onClose={() => setIsAddingProduct(false)}
+          onCreated={product => {
+            onProductCreated(product)
+            form.placeProduct(product)
+            setIsAddingProduct(false)
+          }}
+        />
+      )}
     </div>
   )
 }

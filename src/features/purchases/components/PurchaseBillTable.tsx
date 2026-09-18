@@ -2,8 +2,8 @@ import {
   Card,
   EmptyState,
   FilterBar,
+  Combobox,
   MiniStat,
-  Select,
   Status,
   TableWrap,
 } from '@/components/common'
@@ -67,49 +67,38 @@ export function PurchaseBillTable({
           searchPlaceholder="Cari nomor tagihan, nota, atau supplier..."
           onSearchChange={value => onFilterChange({ ...filters, search: value || undefined })}
         >
-          <Select
-            value={filters.supplierId ?? ''}
-            onChange={event =>
-              onFilterChange({
-                ...filters,
-                supplierId: event.target.value ? Number(event.target.value) : undefined,
-              })
+          <Combobox
+            className="w-56"
+            aria-label="Filter supplier"
+            options={[
+              { value: '', label: 'Semua Supplier' },
+              ...suppliers.map(supplier => ({
+                value: String(supplier.id),
+                label: supplier.name,
+                description: supplier.code,
+              })),
+            ]}
+            value={filters.supplierId ? String(filters.supplierId) : ''}
+            onChange={value =>
+              onFilterChange({ ...filters, supplierId: value ? Number(value) : undefined })
             }
-          >
-            <option value="">Semua Supplier</option>
-            {suppliers.map(supplier => (
-              <option key={supplier.id} value={supplier.id}>
-                {supplier.name}
-              </option>
-            ))}
-          </Select>
+          />
 
-          <Select
+          <Combobox
+            className="w-48"
+            aria-label="Filter kategori"
+            options={[{ value: '', label: 'Semua Kategori' }, ...categories]}
             value={filters.category ?? ''}
-            onChange={event =>
-              onFilterChange({ ...filters, category: event.target.value || undefined })
-            }
-          >
-            <option value="">Semua Kategori</option>
-            {categories.map(category => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
-          </Select>
+            onChange={value => onFilterChange({ ...filters, category: value || undefined })}
+          />
 
-          <Select
+          <Combobox
+            className="w-44"
+            aria-label="Filter status"
+            options={statusOptions}
             value={filters.status ?? ''}
-            onChange={event =>
-              onFilterChange({ ...filters, status: event.target.value || undefined })
-            }
-          >
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+            onChange={value => onFilterChange({ ...filters, status: value || undefined })}
+          />
         </FilterBar>
 
         {bills.length === 0 && !isLoading ? (

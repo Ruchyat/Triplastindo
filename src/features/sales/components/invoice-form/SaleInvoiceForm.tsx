@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Card, Field, InfoNote, Input, SectionHeader, Select, Textarea } from '@/components/common'
+import {
+  Card,
+  Combobox,
+  Field,
+  InfoNote,
+  Input,
+  NumberInput,
+  SectionHeader,
+  Textarea,
+} from '@/components/common'
 import { Button } from '@/components/ui/Button'
 import { ApiError } from '@/services/httpClient'
 import { salesService } from '@/services/salesService'
@@ -98,18 +107,16 @@ export function SaleInvoiceForm({
       </div>
 
       <Field label="Customer" required>
-        <Select
-          className="w-full"
+        <Combobox
+          placeholder="Pilih customer..."
+          options={customers.map(customer => ({
+            value: String(customer.id),
+            label: customer.name,
+            description: customer.code,
+          }))}
           value={form.customerId}
-          onChange={event => form.selectCustomer(event.target.value)}
-        >
-          <option value="">Pilih customer...</option>
-          {customers.map(customer => (
-            <option key={customer.id} value={customer.id}>
-              {customer.name}
-            </option>
-          ))}
-        </Select>
+          onChange={form.selectCustomer}
+        />
       </Field>
 
       </Card>
@@ -124,26 +131,20 @@ export function SaleInvoiceForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="PPN Keluaran">
-          <Input
-            type="number"
-            min="0"
+          <NumberInput
+            prefix="Rp"
             placeholder="0"
             value={form.taxAmount}
-            onChange={event => form.setTaxAmount(event.target.value)}
+            onChange={form.setTaxAmount}
           />
         </Field>
         <Field label="Metode Pembayaran" required>
-          <Select
-            className="w-full"
+          <Combobox
+            clearable={false}
+            options={settlementOptions}
             value={form.settlement}
-            onChange={event => form.setSettlement(event.target.value as ApiSettlementMethod)}
-          >
-            {settlementOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+            onChange={value => form.setSettlement(value as ApiSettlementMethod)}
+          />
         </Field>
 
       </div>
@@ -153,18 +154,12 @@ export function SaleInvoiceForm({
       <div className="grid gap-4 sm:grid-cols-2">
         {form.needsCashAccount && (
           <Field label="Diterima di Akun" required>
-            <Select
-              className="w-full"
+            <Combobox
+              placeholder="Pilih akun kas/bank..."
+              options={banks.map(account => ({ value: String(account.id), label: account.label }))}
               value={form.cashAccountId}
-              onChange={event => form.setCashAccountId(event.target.value)}
-            >
-              <option value="">Pilih akun kas/bank...</option>
-              {banks.map(account => (
-                <option key={account.id} value={account.id}>
-                  {account.label}
-                </option>
-              ))}
-            </Select>
+              onChange={form.setCashAccountId}
+            />
           </Field>
         )}
       </div>
@@ -172,21 +167,15 @@ export function SaleInvoiceForm({
       {form.isDeferred && (
         <div className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/50 p-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Termin (hari)" required>
-              <Input
-                type="number"
-                min="0"
-                value={form.termDays}
-                onChange={event => form.setTermDays(event.target.value)}
-              />
+            <Field label="Termin" required>
+              <NumberInput suffix="hari" value={form.termDays} onChange={form.setTermDays} />
             </Field>
             <Field label="DP Diterima">
-              <Input
-                type="number"
-                min="0"
+              <NumberInput
+                prefix="Rp"
                 placeholder="0"
                 value={form.downPayment}
-                onChange={event => form.setDownPayment(event.target.value)}
+                onChange={form.setDownPayment}
               />
             </Field>
           </div>
