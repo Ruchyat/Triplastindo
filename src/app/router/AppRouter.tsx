@@ -1,12 +1,17 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { AppLayout } from '@/layouts/AppLayout'
 import * as pages from './lazyPages'
-import { routePaths } from './paths'
+import { documentRoutes, routePaths } from './paths'
 import { RequireAuth } from './RequireAuth'
 
-/** Pemetaan route ke komponen halamannya. */
-const routes = [
+/**
+ * Halaman yang dicapai dari sidebar.
+ *
+ * Halaman dokumen — form dan detail transaksi — didaftarkan terpisah di bawah,
+ * karena alamatnya memuat identitas dokumen dan tidak muncul di menu.
+ */
+const menuRoutes = [
   { path: routePaths.dashboard, element: <pages.DashboardPage /> },
 
   { path: routePaths.sales, element: <pages.SalesPage /> },
@@ -36,21 +41,46 @@ const routes = [
   { path: routePaths.setup, element: <pages.SetupPage /> },
 ]
 
-export function AppRouter() {
-  return (
-    <Routes>
-      <Route path={routePaths.login} element={<LoginPage />} />
+/** Form dan detail dokumen transaksi, masing-masing halaman penuh. */
+const documentPages = [
+  // Urutannya penting: `new` harus lebih dahulu agar tidak tertangkap `:id`.
+  { path: documentRoutes.salesInvoiceNew, element: <pages.NewSalesInvoicePage /> },
+  { path: documentRoutes.salesInvoice, element: <pages.SalesInvoicePage /> },
+  { path: documentRoutes.receiptNew, element: <pages.NewReceiptPage /> },
+  { path: documentRoutes.receipt, element: <pages.ReceiptPage /> },
+  { path: documentRoutes.depositNew, element: <pages.NewDepositPage /> },
+  { path: documentRoutes.depositCard, element: <pages.CustomerDepositPage /> },
+  { path: documentRoutes.purchaseBillNew, element: <pages.NewPurchaseBillPage /> },
+  { path: documentRoutes.purchaseBill, element: <pages.PurchaseBillPage /> },
+]
 
-      {/* Seluruh halaman di bawah ini hanya terbuka bagi pengguna yang sudah masuk. */}
-      <Route element={<RequireAuth />}>
-        <Route element={<AppLayout />}>
-          <Route index element={<Navigate to={routePaths.dashboard} replace />} />
-          {routes.map(route => (
-            <Route key={route.path} path={route.path} element={route.element} />
-          ))}
-          <Route path="*" element={<Navigate to={routePaths.dashboard} replace />} />
-        </Route>
-      </Route>
-    </Routes>
-  )
+/**
+ * Router aplikasi.
+ *
+ * Memakai `createBrowserRouter`, bukan `<BrowserRouter>`, karena `useBlocker`
+ * — yang menahan perpindahan halaman ketika ada isian yang belum tersimpan —
+ * hanya tersedia pada data router.
+ */
+const router = createBrowserRouter([
+  { path: routePaths.login, element: <LoginPage /> },
+
+  // Seluruh halaman di bawah ini hanya terbuka bagi pengguna yang sudah masuk.
+  {
+    element: <RequireAuth />,
+    children: [
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Navigate to={routePaths.dashboard} replace /> },
+          ...documentPages,
+          ...menuRoutes,
+          { path: '*', element: <Navigate to={routePaths.dashboard} replace /> },
+        ],
+      },
+    ],
+  },
+])
+
+export function AppRouter() {
+  return <RouterProvider router={router} />
 }

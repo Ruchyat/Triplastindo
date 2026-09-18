@@ -12,6 +12,20 @@
 /** Penanda nilai kosong yang dipakai di seluruh tabel dan laporan. */
 export const EMPTY_VALUE = '–'
 
+/**
+ * Mengubah nilai uang dari API menjadi angka untuk ditampilkan.
+ *
+ * Backend mengirim uang sebagai string dua desimal — `"105000000.00"` — supaya
+ * ketepatannya tidak hilang dalam perjalanan. Pakai fungsi ini tepat sebelum
+ * memformatnya, bukan saat data diterima, agar nilai aslinya tetap utuh ketika
+ * dikirim kembali ke backend.
+ */
+export function toAmount(value: string | number | null | undefined): number {
+  if (value === null || value === undefined || value === '') return 0
+  const parsed = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
 const isPresent = (value: number | null | undefined): value is number =>
   typeof value === 'number' && Number.isFinite(value)
 

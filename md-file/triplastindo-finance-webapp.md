@@ -4,6 +4,16 @@
 > Status: **draft kebutuhan**. Belum ada keputusan stack & belum ada kode.
 > Sumber analisis: Google Sheet "Copy 3 of Finance Triplastindo Rev. 7" (14 tab), dianalisis 17 Sep 2026.
 
+
+> **Status per 18 September 2026.** Dokumen ini adalah rancangan awal dan tetap
+> menjadi rujukan untuk modul yang belum dikerjakan. Untuk modul yang sudah
+> jadi — Penjualan, Penerimaan Pembayaran, Deposit Pelanggan, Pembelian, dan
+> Jurnal Umum — bentuk data dan aturannya yang berlaku ada di
+> `triplastindo-kontrak-api.md`, dan alasan setiap keputusan ada di
+> `triplastindo-catatan-keputusan-proyek.md`. Beberapa hal di sini sudah
+> disempurnakan di sana, misalnya metode pembayaran yang menyusut dari tiga
+> menjadi dua, dan pemakaian deposit yang tidak lagi otomatis.
+
 ---
 
 ## 1. Konteks

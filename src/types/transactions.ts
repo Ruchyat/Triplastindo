@@ -11,19 +11,6 @@ export type DocumentType =
   | 'deposit'
   | 'refund'
 
-/** Invoice penjualan — sumber pendapatan dan piutang. */
-export type SalesInvoice = {
-  number: string
-  date: string
-  customer: string
-  product: string
-  quantityKg: number
-  pricePerKg: number
-  total: number
-  paid: number
-  status: PaymentStatus
-}
-
 /** Tagihan pembelian — sumber persediaan/beban/aset dan utang. */
 export type PurchaseBill = {
   number: string
@@ -45,24 +32,6 @@ export type ExpenseVoucher = {
   amount: number
   paymentAccount: string
   status: string
-}
-
-/** Asal mula satu baris kartu deposit pelanggan. */
-export type DepositSource = 'Bank' | 'Invoice' | 'Refund' | 'Saldo Awal'
-
-/** Satu mutasi pada kartu deposit pelanggan. */
-export type DepositActivity = {
-  number: string
-  date: string
-  customer: string
-  description: string
-  /** Deposit yang diterima perusahaan. */
-  received: number
-  /** Deposit yang dipakai pada invoice atau dikembalikan ke customer. */
-  applied: number
-  /** Saldo deposit setelah mutasi ini. */
-  balance: number
-  source: DepositSource
 }
 
 /** Satu baris mutasi pada akun kas atau bank. */

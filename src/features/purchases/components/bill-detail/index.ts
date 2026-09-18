@@ -1,0 +1,1 @@
+export { PurchaseBillDetailView } from './PurchaseBillDetailView'

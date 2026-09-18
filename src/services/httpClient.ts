@@ -96,8 +96,29 @@ export async function request<T>(path: string, init: RequestInit = {}): Promise<
   return body as T
 }
 
+/**
+ * Menyusun query string dari objek filter.
+ *
+ * Nilai kosong dibuang, sehingga pemanggil dapat menuliskan seluruh filternya
+ * apa adanya tanpa perlu menyaring mana yang sedang terisi.
+ */
+export function query(params: Record<string, string | number | boolean | undefined | null>): string {
+  const search = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === '') continue
+    search.set(key, String(value))
+  }
+
+  const encoded = search.toString()
+  return encoded ? `?${encoded}` : ''
+}
+
 export const http = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, data?: unknown) =>
     request<T>(path, { method: 'POST', body: data ? JSON.stringify(data) : undefined }),
+  put: <T>(path: string, data?: unknown) =>
+    request<T>(path, { method: 'PUT', body: data ? JSON.stringify(data) : undefined }),
+  del: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 }

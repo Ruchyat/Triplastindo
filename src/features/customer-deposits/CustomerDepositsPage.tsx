@@ -1,21 +1,19 @@
+import { useNavigate } from 'react-router-dom'
 import { Plus } from 'lucide-react'
+import { toPath } from '@/app/router'
 import { InfoNote, PageHeader } from '@/components/common'
-import { TransactionDrawer } from '@/components/financial'
 import { Button } from '@/components/ui/Button'
-import { DepositTable } from '@/features/sales/components/DepositTable'
-import { useDrawer } from '@/hooks/useDisclosure'
-import { customerDepositSummary, depositActivities } from '@/mocks/sales'
-import type { DocumentType } from '@/types'
+import { DepositsView } from '@/features/deposits/DepositsView'
 
 /**
  * Halaman Deposit Pelanggan.
  *
  * Deposit adalah modul mandiri: uang titipan dapat diterima tanpa invoice
- * lebih dulu, dicatat sebagai kewajiban, lalu dipotong otomatis ketika
- * invoice penjualan dibuat.
+ * lebih dulu, dicatat sebagai kewajiban, lalu dipotong saat invoice penjualan
+ * diposting bila pencatat memilihnya.
  */
 export function CustomerDepositsPage() {
-  const drawer = useDrawer<DocumentType>()
+  const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
@@ -25,10 +23,10 @@ export function CustomerDepositsPage() {
         description="Kelola uang titipan customer sebelum ada invoice penjualan"
         actions={
           <>
-            <Button variant="outline" onClick={() => drawer.open('refund')}>
+            <Button variant="outline" onClick={() => navigate(toPath.depositNew('refunded'))}>
               Kembalikan Deposit
             </Button>
-            <Button onClick={() => drawer.open('deposit')}>
+            <Button onClick={() => navigate(toPath.depositNew('received'))}>
               <Plus size={16} />
               Terima Deposit
             </Button>
@@ -37,18 +35,12 @@ export function CustomerDepositsPage() {
       />
 
       <InfoNote>
-        Deposit dapat diterima tanpa penjualan atau invoice. Saat invoice dibuat, saldo deposit
-        customer akan dipotong otomatis terlebih dahulu. Customer tidak menyimpan saldo deposit dan
-        piutang terbuka secara bersamaan.
+        Deposit dapat diterima tanpa penjualan atau invoice. Saat invoice diposting, saldo deposit
+        customer dapat dipakai memotong tagihannya — pencatat yang memutuskan lewat pilihan pada
+        form invoice.
       </InfoNote>
 
-      <DepositTable
-        activities={depositActivities}
-        summary={customerDepositSummary}
-        showNote={false}
-      />
-
-      {drawer.active && <TransactionDrawer type={drawer.active} onClose={drawer.close} />}
+      <DepositsView showNote={false} />
     </div>
   )
 }

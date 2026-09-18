@@ -2,9 +2,15 @@
 
 > Spesifikasi pembuatan **UI web app Finance Triplastindo** berdasarkan kondisi dan struktur modul pada dokumen `triplastindo-finance-webapp.md`.
 >
-> **Status per 17 September 2026:** seluruh halaman sudah dibuat dan autentikasi sudah
-> tersambung ke API. Logika akuntansi, posting jurnal, kalkulasi laporan, dan approval
-> belum diimplementasikan — halaman modul masih membaca mock data.
+> **Status per 18 September 2026:** seluruh halaman sudah dibuat. Penjualan,
+> Penerimaan Pembayaran, Deposit Pelanggan, Pembelian, dan Jurnal Umum sudah
+> tersambung ke database; sisanya masih membaca mock data.
+>
+> Beberapa bagian dokumen ini **sudah didahului keadaan sebenarnya** — bentuk
+> beberapa halaman berubah setelah dipakai dan ditinjau. Bagian yang berubah
+> ditandai di tempatnya masing-masing. Sumber paling mutakhir adalah
+> `triplastindo-kontrak-api.md` untuk bentuk data dan
+> `triplastindo-catatan-keputusan-proyek.md` untuk alasan setiap perubahan.
 >
 > Frontend:
 > - Vite, React 19, TypeScript
@@ -189,13 +195,14 @@ Route:
 
 Icon: `Store` · Route: `/sales`
 
-Invoice penjualan beserta tab Deposit Pelanggan.
+Tiga tab: Invoice Penjualan, Penerimaan Pembayaran, dan Deposit Pelanggan.
 
 ### 7. Pembelian
 
 Icon: `ShoppingCart` · Route: `/purchases`
 
-Tagihan pembelian untuk semua kategori: bahan baku, sparepart, bahan pendukung, dan aset.
+Tagihan pembelian untuk semua kategori. Kategorinya yang menentukan akun mana
+yang dipakai jurnalnya. Kategori Aset Tetap belum tersedia, menunggu modul Aset.
 
 ### 8. Pengeluaran
 
@@ -241,6 +248,17 @@ Sub-ledger, beserta kartu umur piutang. Terbentuk otomatis dari invoice penjuala
 Icon: `CircleDollarSign` · Route: `/customer-deposits`
 
 Uang titipan customer yang dapat diterima tanpa invoice. Dicatat sebagai kewajiban.
+
+> **Berubah 18 September 2026.** Halamannya menampilkan **daftar customer**,
+> bukan daftar mutasi. Saldo deposit adalah pertanyaan per customer — "si A
+> masih punya titipan berapa" — bukan per tanggal; bentuk buku mutasi memaksa
+> pembaca menjumlah sendiri.
+>
+> Kolomnya: Customer, Mutasi Terakhir, Deposit Masuk, Terpakai, Dikembalikan,
+> Saldo. Keempat angkanya lengkap agar barisnya dapat dijumlah sendiri.
+> Mengklik satu baris membuka **kartu deposit customer itu** pada halaman
+> tersendiri, berisi saldo, riwayat mutasi dengan saldo berjalan, dan tautan ke
+> jurnal serta invoice terkait.
 
 ### 15. Customer
 
@@ -630,29 +648,59 @@ selama selisih belum nol** — jurnal tidak seimbang tidak boleh tersimpan.
 
 # 7a. Halaman Transaksi Bisnis
 
-Keempat halaman berikut memakai panel geser (`TransactionDrawer`) yang sama untuk
-membuat dokumen, dengan bagian form yang menyesuaikan jenis dokumennya.
+> **Berubah 18 September 2026.** Rancangan semula memakai satu panel geser
+> (`TransactionDrawer`) untuk seluruh jenis dokumen. Form dan detail dokumen
+> kini berupa **halaman penuh** dengan alamatnya sendiri — panel menghapus
+> isian hanya karena satu klik di luarnya, tidak punya alamat sehingga refresh
+> membuang isian, dan lebarnya mengunci jumlah kolom tabel item.
+>
+> `TransactionDrawer` masih melayani Pengeluaran dan Kas & Bank, yang datanya
+> belum tersambung.
+
+Alamat halaman dokumen:
+
+```text
+/sales/invoices/new        /sales/invoices/:id
+/sales/receipts/new        /sales/receipts/:id
+/customer-deposits/new     /customer-deposits/:customerId
+/purchases/bills/new       /purchases/bills/:id
+```
+
+Meninggalkan halaman form yang isiannya belum tersimpan memunculkan konfirmasi,
+begitu pula menutup tab atau menekan refresh.
 
 ## Penjualan — `/sales`
 
-Dua tab: **Invoice Penjualan** dan **Deposit Pelanggan**.
+Tiga tab: **Invoice Penjualan**, **Penerimaan Pembayaran**, dan **Deposit Pelanggan**.
 
-KPI: Penjualan bulan berjalan, DP & pembayaran diterima, Piutang terbuka, Invoice jatuh tempo.
+KPI: Total penjualan, DP & pembayaran diterima, Piutang terbuka, Invoice jatuh tempo.
 
-Tabel invoice: No. Invoice, Tanggal, Customer, Produk, Qty, Total, DP/Deposit, Sisa, Status.
+Tabel invoice: No. Invoice, Tanggal, Customer, Produk, Qty, Total, Diterima, Sisa, Status.
 
 Form invoice:
 
-- Metode pembayaran dibatasi **Cash, Bank, Piutang**.
+- Metode pembayaran hanya **Tunai** dan **Piutang**. Kas dan bank tidak dipisah
+  sebagai metode — rekening penerimanya sudah dipilih tersendiri lewat dropdown
+  akun Kas & Bank, sehingga memisahkannya menanyakan hal yang sama dua kali.
 - Termin dan jatuh tempo hanya muncul bila metodenya Piutang.
-- Bila Piutang: tampilkan DP diterima, saldo deposit yang dipotong otomatis, dan ringkasan
-  Total Invoice / DP + Deposit / Sisa Piutang.
-- Preview jurnal ditampilkan sebelum dokumen diposting.
+- Saldo deposit customer ditampilkan dengan **checkbox**, bukan dipotong
+  otomatis: ada customer yang ingin depositnya tetap utuh. Berlaku untuk kedua
+  metode.
+- Akun penerima hanya wajib bila ada uang yang benar-benar masuk. Invoice tunai
+  yang seluruhnya tertutup deposit tidak memindahkan uang sama sekali.
+- Kolom PPN Keluaran tersedia.
 
 ## Pembelian — `/purchases`
 
-Satu menu untuk semua kategori: Bahan Baku, Sparepart, Bahan Pendukung, Aset.
-Metode pembayaran dibatasi **Cash, Bank, Utang**.
+Satu menu untuk semua kategori. **Kategori pembelian menentukan akun** mana
+yang didebit dan akun utang mana yang dipakai — pemetaannya ada di konfigurasi
+backend, dan formnya menampilkan akun tujuannya sebelum tagihan disimpan.
+
+Bentuk baris item mengikuti kategori: kategori persediaan meminta produk pada
+tiap baris, kategori beban cukup keterangan.
+
+Metode pembayaran hanya **Tunai** dan **Utang**. Kategori Aset Tetap belum
+tersedia, menunggu modul Aset.
 
 ## Pengeluaran — `/expenses`
 
@@ -693,24 +741,31 @@ Button:
 
 ## Tabel
 
-| No Bukti | Tanggal | Keterangan | Account | Debit | Kredit | Tagging |
-|---|---|---|---|---:|---:|---|
+> **Berubah 18 September 2026.** Percobaan pertama menggabungkan satu transaksi
+> menjadi satu baris dengan kolom Debit berisi totalnya — jurnal tiga baris jadi
+> terbaca seperti jurnal dua baris. Sekarang **satu baris tabel adalah satu sisi
+> debit atau kredit**, sama seperti tab JURNAL UMUM di Google Sheet.
 
-Transaksi ditampilkan sebagai grouped rows.
+| No. Bukti | Tanggal | COA | Nama Akun | Kategori Akun | Keterangan | Debit | Kredit |
+|---|---|---|---|---|---|---:|---:|
 
-Gunakan expandable row.
+Nomor bukti dan tanggal ditulis sekali di baris pertama tiap transaksi lalu
+dikosongkan di bawahnya; garis tebal menandai pergantian transaksi. Tidak ada
+baris kepala transaksi — ia memecah tabel menjadi dua jenis baris dan memaksa
+mata berpindah-pindah saat menyisir data.
+
+Nomor dokumen asal (`INV/…`, `PUR/…`, `BKM/…`, `DEP/…`) ditampilkan di bawah
+nomor bukti sebagai tautan ke halaman dokumennya — itu yang paling sering
+dicocokkan saat pemeriksaan, sehingga tidak pantas menuntut satu klik.
 
 ### Detail transaksi
 
-Tampilkan:
+Mengklik baris membuka **accordion** di bawah transaksinya, bukan panel samping:
+panel menutupi tabel dan membuat pemeriksa kehilangan posisi barisnya saat
+menyisir banyak data. Isinya satu baris ringkas — keterangan transaksi, sumber,
+metode pembayaran, pembuat, total, dan tagging.
 
-- Nomor jurnal
-- Pembuat
-- Tanggal dibuat
-- Jenis pembayaran
-- Lampiran
-- Source
-- Audit history
+Lampiran dan audit history belum ada.
 
 ---
 

@@ -97,3 +97,49 @@ export const PayslipsPage = lazy(() =>
 export const SetupPage = lazy(() =>
   import('@/features/setup/SetupPage').then(m => ({ default: m.SetupPage })),
 )
+
+/*
+ * Halaman dokumen transaksi.
+ *
+ * Form dan detail masing-masing halaman penuh, bukan panel: pencatatan
+ * transaksi adalah pekerjaan inti yang memerlukan ruang, alamat sendiri, dan
+ * perlindungan terhadap isian yang belum tersimpan.
+ */
+
+export const NewSalesInvoicePage = lazy(() =>
+  import('@/features/sales/pages/NewSalesInvoicePage').then(m => ({
+    default: m.NewSalesInvoicePage,
+  })),
+)
+
+export const SalesInvoicePage = lazy(() =>
+  import('@/features/sales/pages/SalesInvoicePage').then(m => ({ default: m.SalesInvoicePage })),
+)
+
+export const NewReceiptPage = lazy(() =>
+  import('@/features/sales/pages/NewReceiptPage').then(m => ({ default: m.NewReceiptPage })),
+)
+
+export const ReceiptPage = lazy(() =>
+  import('@/features/sales/pages/ReceiptPage').then(m => ({ default: m.ReceiptPage })),
+)
+
+export const NewDepositPage = lazy(() =>
+  import('@/features/deposits/pages/NewDepositPage').then(m => ({ default: m.NewDepositPage })),
+)
+
+export const CustomerDepositPage = lazy(() =>
+  import('@/features/deposits/pages/CustomerDepositPage').then(m => ({
+    default: m.CustomerDepositPage,
+  })),
+)
+
+export const NewPurchaseBillPage = lazy(() =>
+  import('@/features/purchases/pages/NewPurchaseBillPage').then(m => ({
+    default: m.NewPurchaseBillPage,
+  })),
+)
+
+export const PurchaseBillPage = lazy(() =>
+  import('@/features/purchases/pages/PurchaseBillPage').then(m => ({ default: m.PurchaseBillPage })),
+)

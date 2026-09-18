@@ -10,4 +10,5 @@ export {
   formatNumber,
   formatPercent,
   formatRatioPercent,
+  toAmount,
 } from './format'

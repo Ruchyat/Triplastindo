@@ -113,6 +113,7 @@ Perintah artisan non-server tetap dijalankan seperti biasa dari folder `backend/
 ```bash
 php artisan migrate
 php artisan db:seed --class=SuperAdminSeeder
+php artisan db:seed --class=ChartOfAccountSeeder   # COA default, aman diulang
 php artisan test
 ./vendor/bin/pint
 ```

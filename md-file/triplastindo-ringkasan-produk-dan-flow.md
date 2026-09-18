@@ -354,6 +354,24 @@ Proyek sudah melewati tahap UI dan kini memiliki backend dengan autentikasi yang
 - Autentikasi token Bearer memakai Laravel Sanctum.
 - Akun Super Admin beserta kolom peran pada tabel user.
 - Pembatasan percobaan login dan penolakan akun nonaktif.
+- Chart of Accounts: 15 kategori dan 125 akun default Triplastindo, tersemai dari Lampiran A.
+- Tabel jurnal, baris jurnal, dan periode buku.
+- `JournalPoster`, satu-satunya pintu masuk jurnal, yang menolak jurnal tidak
+  seimbang, akun nonaktif, nominal nol, dan periode yang sudah ditutup.
+- Master customer dan produk, beserta pemetaan produk ke akun pendapatan.
+- Modul Penjualan: invoice tunai maupun kredit, posting jurnal otomatis,
+  pembentukan piutang, dan pembatalan dengan jurnal pembalik.
+- Endpoint API untuk COA, master data, Jurnal Umum, dan Penjualan.
+- Halaman Jurnal Umum membaca jurnal sebenarnya, lengkap dengan baris debit-kreditnya.
+- Detail invoice beserta item, nilai, dan jurnalnya, serta tindakan posting,
+  pembatalan, dan penghapusan draft.
+- Penerimaan pembayaran: satu bukti dapat melunasi beberapa invoice, piutang
+  berkurang sampai lunas, dan pembatalannya mengembalikan piutang seperti semula.
+- Deposit pelanggan: uang titipan dicatat sebagai kewajiban, dan dipotong
+  otomatis saat invoice kredit diposting sebelum sisanya menjadi piutang.
+- PPN Keluaran pada invoice penjualan, dan PPN Masukan pada tagihan pembelian.
+- Modul Pembelian: tagihan supplier, kategori pembelian yang menentukan akun
+  debit dan akun utangnya, serta pembentukan utang pada pembelian bertermin.
 
 **Lingkungan pengembangan**
 
@@ -363,7 +381,10 @@ Proyek sudah melewati tahap UI dan kini memiliki backend dengan autentikasi yang
 
 ### Belum tersedia
 
-- Penyimpanan transaksi dan posting jurnal.
+- Pembayaran kepada supplier.
+- Modul Pengeluaran dan Kas & Bank.
+- Buku Besar dan neraca saldo dari data sebenarnya.
+- Jurnal Manual yang benar-benar menyimpan — endpointnya sudah ada, halamannya belum.
 - Kalkulasi akuntansi dan laporan dari data sebenarnya.
 - Matriks hak akses per modul.
 - Tutup buku dan approval.
@@ -371,9 +392,9 @@ Proyek sudah melewati tahap UI dan kini memiliki backend dengan autentikasi yang
 - Audit trail.
 - Integrasi dengan bank atau layanan lain.
 
-Seluruh halaman modul masih membaca mock data. Artinya bentuk produk sudah dapat
-ditinjau dan pengguna sudah dapat masuk ke aplikasi, tetapi kegiatan finance yang
-sebenarnya belum dapat dijalankan.
+Modul Penjualan sudah lengkap dan seluruhnya tersambung ke database: invoice,
+penerimaan pembayaran, dan deposit pelanggan. Jurnalnya langsung terlihat di
+Jurnal Umum. Halaman modul lainnya masih membaca mock data.
 
 ---
 
@@ -406,15 +427,22 @@ Urutan implementasi yang disarankan:
 1. ~~Finalisasi UI dan alur pengguna.~~ **Selesai.**
 2. ~~Implementasikan autentikasi.~~ **Selesai** — login, token, dan akun Super Admin.
 3. Implementasikan hak akses per modul. Peran sudah tersimpan, tetapi belum membatasi apa pun.
-4. Susun kontrak API dan rancangan database untuk modul transaksi.
-5. Implementasikan Setup dan master data.
-6. Implementasikan Penjualan, Pembelian, Pengeluaran, Kas & Bank, beserta posting jurnal otomatisnya.
-7. Implementasikan Jurnal Umum dan Buku Besar dari data sebenarnya.
-8. Implementasikan laporan keuangan.
-9. Implementasikan Utang, Piutang, Aset, dan tutup buku.
-10. Implementasikan Payroll, Slip Gaji, dan Bagi Hasil.
-11. Implementasikan Inventory dan Dashboard aktual.
-12. Validasi hasil aplikasi terhadap Google Sheet.
+4. ~~Susun kontrak API dan rancangan database inti akuntansi.~~ **Selesai** — COA,
+   jurnal, periode, dan `JournalPoster`; kontraknya di `triplastindo-kontrak-api.md`.
+5. ~~Implementasikan Penjualan beserta posting jurnal otomatisnya.~~ **Selesai** —
+   dipakai sebagai contoh pola untuk modul transaksi berikutnya.
+6. ~~Implementasikan penerimaan pembayaran.~~ **Selesai** — siklus akrual
+   Penjualan sudah tertutup: piutang terbentuk, berkurang, dan lunas.
+7. ~~Implementasikan Deposit Pelanggan.~~ **Selesai** — modul Penjualan tuntas.
+8. ~~Implementasikan Pembelian.~~ **Selesai** — tagihan supplier dan utangnya.
+9. Implementasikan pembayaran supplier, Pengeluaran, dan Kas & Bank.
+9. Implementasikan Setup dan master data agar dapat disunting pengguna.
+10. ~~Implementasikan Jurnal Umum dari data sebenarnya.~~ **Selesai.** Buku Besar menyusul.
+11. Implementasikan laporan keuangan.
+12. Implementasikan Utang, Piutang, Aset, dan tutup buku.
+13. Implementasikan Payroll, Slip Gaji, dan Bagi Hasil.
+14. Implementasikan Inventory dan Dashboard aktual.
+15. Validasi hasil aplikasi terhadap Google Sheet.
 
 ---
 

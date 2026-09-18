@@ -1,0 +1,1 @@
+export { InvoiceDetailView } from './InvoiceDetailView'

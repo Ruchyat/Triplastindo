@@ -1,66 +1,9 @@
-import type { JournalEntry, LedgerRow } from '@/types'
+import type { LedgerRow } from '@/types'
 
-export const journalEntries: JournalEntry[] = [
-  {
-    number: 'JU/2026/09/0042',
-    date: '17 Sep 2026',
-    description: 'Penjualan tali tunai',
-    accounts: 'Bank BCA / Penjualan Tali',
-    debit: 185_000_000,
-    credit: 185_000_000,
-    tagging: 'Kas & Bank',
-    createdBy: 'Andi Setiawan',
-    paymentMethod: 'Transfer Sesama Bank',
-    source: 'Transaksi Bisnis',
-    attachment: 'bukti-transfer.pdf',
-  },
-  {
-    number: 'JU/2026/09/0041',
-    date: '16 Sep 2026',
-    description: 'Pembelian karung polos',
-    accounts: 'Persediaan / Bank BCA',
-    debit: 72_500_000,
-    credit: 72_500_000,
-    tagging: 'Kas & Bank',
-    createdBy: 'Andi Setiawan',
-    paymentMethod: 'Transfer Antar Bank',
-    source: 'Pembelian',
-    attachment: 'tagihan-supplier.pdf',
-  },
-  {
-    number: 'JU/2026/09/0040',
-    date: '15 Sep 2026',
-    description: 'Depresiasi aset September',
-    accounts: 'Beban Penyusutan / Akumulasi',
-    debit: 18_450_000,
-    credit: 18_450_000,
-    tagging: 'Non Kas & Bank',
-    createdBy: 'Sistem',
-    paymentMethod: '–',
-    source: 'Jurnal Otomatis',
-    attachment: '–',
-  },
-  {
-    number: 'JU/2026/09/0039',
-    date: '14 Sep 2026',
-    description: 'Pembayaran utang HU-014',
-    accounts: 'Hutang Usaha / Bank BCA',
-    debit: 45_000_000,
-    credit: 45_000_000,
-    tagging: 'Kas & Bank',
-    createdBy: 'Andi Setiawan',
-    paymentMethod: 'Transfer Antar Bank',
-    source: 'Kas & Bank',
-    attachment: 'bukti-transfer.pdf',
-  },
-]
-
-export const journalSummary = {
-  totalDebit: 321_950_000,
-  totalCredit: 321_950_000,
-  /** Jumlah seluruh jurnal pada periode, dipakai untuk teks pagination. */
-  totalEntries: 42,
-}
+/*
+ * Jurnal Umum sudah membaca database, sehingga mock-nya dihapus. Yang tersisa
+ * di berkas ini hanya mock Buku Besar, yang halamannya belum tersambung.
+ */
 
 /** Mutasi Buku Besar untuk akun 1-10003 Bank BCA. */
 export const ledgerRows: LedgerRow[] = [

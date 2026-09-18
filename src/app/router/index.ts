@@ -1,2 +1,2 @@
 export { AppRouter } from './AppRouter'
-export { routePaths, type RoutePath } from './paths'
+export { documentRoutes, routePaths, toPath, type RoutePath } from './paths'

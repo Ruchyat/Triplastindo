@@ -9,20 +9,33 @@
 body { margin: 0; min-width: 320px; min-height: 100vh; }
 button, select, input { font: inherit; }
 button { cursor: pointer; }
-.card { border: 1px solid #e2e8f0; border-radius: 14px; background: white; box-shadow: 0 1px 2px rgb(15 23 42 / 0.035); }
-.sidebar-scroll { scrollbar-width: thin; scrollbar-color: #334e68 transparent; }
-.sidebar-scroll::-webkit-scrollbar { width: 4px; }
-.sidebar-scroll::-webkit-scrollbar-thumb { background: #334e68; border-radius: 99px; }
-.field { height: 40px; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; background: white; padding: 0 12px; font-size: 13px; color: #334155; outline: none; transition: .15s; }
-.field:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px #dbeafe; }
-.data-table { width: 100%; min-width: 760px; border-collapse: collapse; text-align: left; }
-.data-table thead { background: #f8fafc; color: #64748b; }
-.data-table th { border-block: 1px solid #e2e8f0; padding: 11px 16px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
-.data-table td { border-bottom: 1px solid #f1f5f9; padding: 13px 16px; font-size: 12px; color: #475569; white-space: nowrap; }
-.data-table tbody tr:hover { background: #f8fafc; }
-.data-table .money { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: #1e293b; }
-.report-row { display: grid; grid-template-columns: minmax(240px, 1fr) repeat(2, minmax(130px, .25fr)); gap: 16px; padding: 9px 16px; font-size: 12px; align-items: center; }
-.report-row > :not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+/*
+ * Kelas komponen wajib berada di dalam @layer components.
+ *
+ * Tailwind v4 menempatkan utilitas di @layer utilities, dan CSS tanpa layer
+ * selalu menang atas CSS berlayer — berapa pun specificity-nya. Kelas di sini
+ * pernah ditulis tanpa layer, sehingga `class="field pl-9"` tetap memakai
+ * padding milik `.field` dan ikon pencarian menimpa teksnya.
+ *
+ * Dengan berada di layer components, utilitas yang ditambahkan di komponen
+ * menang, persis seperti yang diharapkan saat menuliskannya.
+ */
+@layer components {
+  .card { border: 1px solid #e2e8f0; border-radius: 14px; background: white; box-shadow: 0 1px 2px rgb(15 23 42 / 0.035); }
+  .sidebar-scroll { scrollbar-width: thin; scrollbar-color: #334e68 transparent; }
+  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: #334e68; border-radius: 99px; }
+  .field { height: 40px; width: 100%; border: 1px solid #e2e8f0; border-radius: 8px; background: white; padding: 0 12px; font-size: 13px; color: #334155; outline: none; transition: .15s; }
+  .field:focus { border-color: #60a5fa; box-shadow: 0 0 0 3px #dbeafe; }
+  .data-table { width: 100%; min-width: 760px; border-collapse: collapse; text-align: left; }
+  .data-table thead { background: #f8fafc; color: #64748b; }
+  .data-table th { border-block: 1px solid #e2e8f0; padding: 11px 16px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+  .data-table td { border-bottom: 1px solid #f1f5f9; padding: 13px 16px; font-size: 12px; color: #475569; white-space: nowrap; }
+  .data-table tbody tr:hover { background: #f8fafc; }
+  .data-table .money { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: #1e293b; }
+  .report-row { display: grid; grid-template-columns: minmax(240px, 1fr) repeat(2, minmax(130px, .25fr)); gap: 16px; padding: 9px 16px; font-size: 12px; align-items: center; }
+  .report-row > :not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+}
 
 @media print {
   aside, header, button { display: none !important; }
