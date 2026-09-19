@@ -1,8 +1,9 @@
-import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { AppLayout } from '@/layouts/AppLayout'
 import * as pages from './lazyPages'
 import { documentRoutes, routePaths } from './paths'
+import { HomeRedirect } from './HomeRedirect'
 import { RequireAuth } from './RequireAuth'
 
 /**
@@ -77,10 +78,10 @@ const router = createBrowserRouter([
       {
         element: <AppLayout />,
         children: [
-          { index: true, element: <Navigate to={routePaths.dashboard} replace /> },
+          { index: true, element: <HomeRedirect /> },
           ...documentPages,
           ...menuRoutes,
-          { path: '*', element: <Navigate to={routePaths.dashboard} replace /> },
+          { path: '*', element: <HomeRedirect /> },
         ],
       },
     ],

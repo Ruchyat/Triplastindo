@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom'
 import { ChevronLeft, X } from 'lucide-react'
 import { cn } from '@/lib'
-import { navigationGroups, type NavItem } from './navigation'
+import { usePermissions } from '@/features/auth/usePermissions'
+import { navigationFor, type NavItem } from './navigation'
 
 type Props = {
   collapsed: boolean
@@ -11,6 +12,8 @@ type Props = {
 }
 
 export function AppSidebar({ collapsed, mobileOpen, onCollapse, onMobileClose }: Props) {
+  const permissions = usePermissions()
+
   return (
     <>
       {mobileOpen && (
@@ -31,7 +34,7 @@ export function AppSidebar({ collapsed, mobileOpen, onCollapse, onMobileClose }:
         <SidebarBrand collapsed={collapsed} onMobileClose={onMobileClose} />
 
         <nav className="sidebar-scroll flex-1 overflow-y-auto px-3 py-4">
-          {navigationGroups.map(group => (
+          {navigationFor(permissions.can).map(group => (
             <div key={group.label} className="mb-5">
               {!collapsed && (
                 <p className="mb-2 px-3 text-[10px] font-bold tracking-[.16em] text-slate-400">

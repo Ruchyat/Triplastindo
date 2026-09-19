@@ -839,3 +839,183 @@ disusun. Menunggu modul Aset.
 sudah diperiksa: yang tersedia hanya COA, master aset, karyawan, dan bulan.
 Daftar kategori di atas disusun dari COA lalu dikonfirmasi bersama pemilik
 proses, bukan disalin dari dokumen yang sudah ada.
+
+---
+
+## 17. Keputusan Pembayaran Supplier
+
+Diputuskan 18–19 September 2026.
+
+**Cermin penuh dari Penerimaan Pembayaran.** Satu bukti (`BKK/…`) melunasi
+beberapa tagihan, nilainya dijumlahkan dari alokasi, pembatalan membalik jurnal
+dan mengembalikan utang. Tidak ada aturan baru; yang berbeda hanya arah uangnya.
+
+**Sisi debit dikelompokkan per akun utang.** Tagihan bahan baku berutang ke
+`2-10001`, bahan pendukung ke `2-10002`, sisanya ke `2-10000`. Satu bukti yang
+membayar tagihan dari kategori berbeda menghasilkan beberapa baris debit —
+supaya saldo tiap akun utang di Neraca tetap benar.
+
+**Halaman Utang dan Piutang membaca dokumennya langsung.** Tidak ada tabel
+kartu utang/piutang terpisah: barisnya adalah tagihan dan invoice itu sendiri,
+dengan penyaring `status=outstanding`. Tombol *Bayar* / *Terima* membuka form
+pelunasan yang sudah terisi.
+
+---
+
+## 18. Keputusan Pengeluaran dan Kas & Bank
+
+**Pengeluaran menunjuk akun beban langsung, tanpa kategori perantara.** Daftar
+bebannya sudah tersusun rapi di COA (kelompok HPP, Beban, Beban Lain, Pajak)
+dan itulah yang dibaca di Laba Rugi. Kategori tambahan hanya menjadi lapisan
+yang harus dipelihara dua kali. Akun di luar kelompok itu ditolak backend.
+
+**Kas & Bank tidak mencatat penerimaan dan pembayaran sendiri.** Keduanya tetap
+ditautkan ke invoice dan tagihan asalnya lewat modul Penjualan dan Pembelian;
+halaman Kas & Bank hanya menyediakan pintasannya. Yang dicatat di sini cuma
+transfer antar akun (`TRF/…`), yang memang tidak punya dokumen asal lain.
+
+**Saldo dan mutasi kas dihitung dari jurnal.** Tidak ada saldo yang disimpan
+terpisah, sehingga angka di Kas & Bank, Buku Besar, Neraca, dan Arus Kas tidak
+mungkin berbeda satu sama lain.
+
+**Transfer bersumber `cash_transfer` supaya Arus Kas mengabaikannya.** Kedua
+sisinya akun kas; memasukkannya ke Arus Kas akan menggelembungkan uang masuk
+dan uang keluar dengan angka yang sama.
+
+---
+
+## 19. Keputusan Buku Besar, Jurnal Manual, dan Master Data
+
+**Buku Besar dan Neraca Saldo tidak menyimpan saldo.** Saldo awal adalah
+jumlah seluruh baris jurnal sebelum rentang; jurnal yang dihapus tidak ikut.
+Rentangnya wajib — tanpa batas, saldo awal tidak punya arti.
+
+**Jurnal sederhana adalah jurnal majemuk dengan dua baris.** Keduanya berbagi
+state; berpindah tab tidak menghilangkan isian. Yang mengunci keseimbangan
+tetap `JournalPoster`, bukan form.
+
+**Master data tidak pernah dihapus, hanya dinonaktifkan.** Dokumen lama
+merujuk ke sana. Kode boleh dikosongkan dan dibuatkan mengikuti lebar kode
+yang sudah ada (`CUS-005` melanjutkan `CUS-004`; `PRD-0001` bila belum ada
+kode bernomor). Akun COA yang sudah dipakai jurnal tidak boleh ganti kode,
+kategori, atau saldo normal — mengubahnya menggeser laporan periode lalu.
+
+**Produk boleh dibuat dari dalam form pembelian.** Barang yang dibeli sering
+belum ada di master; memaksa pencatat ke Setup lalu kembali membuat isian
+tagihannya hilang. Produk baru langsung masuk ke baris item.
+
+---
+
+## 20. Keputusan Laporan Keuangan dan Dashboard
+
+**Google Sheet Finance Triplastindo adalah acuan utama susunan laporan.**
+Tab LAPORAN LABA RUGI, LAPORAN NERACA, LAPORAN ARUS KAS, dan DASHBOARD
+dibaca langsung; susunan baris, kolom bulan/YTD, dan standar rasio disalin
+dari sana.
+
+**Laba Rugi menampilkan seluruh akun kelompoknya meski nol**, sama seperti di
+sheet, agar pembaca tahu akun mana yang belum pernah bergerak. Urutannya:
+Pendapatan − HPP = Laba Kotor; − Beban Operasional = Laba Operasional;
+± Lain-lain = Laba Sebelum Pajak; − Pajak = Laba Bersih.
+
+**Neraca menyajikan laba yang belum ditutup sebagai dua baris hitungan** —
+laba ditahan periode lalu dan laba tahun berjalan — di bagian Ekuitas.
+Tutup buku belum ada; tanpa dua baris ini neraca tidak akan seimbang.
+
+**Kategori Arus Kas disimpulkan sistem dari akun lawan.** Di sheet kolom ini
+diisi manual per jurnal, dan itulah sumber kesalahan yang paling sering.
+Aturannya: lawan aset tetap → investasi; lawan ekuitas atau Kewajiban Jangka
+Panjang → pendanaan; selebihnya operasi. Uang masuk operasi dianggap "dari
+pelanggan" bila lawannya pendapatan, piutang, atau pendapatan diterima dimuka.
+
+**Standar rasio diambil dari sheet apa adanya**: CR ≥ 1,2; QR ≥ 1,2;
+GPM ≥ 30%; NPM ≥ 20%; DER ≤ 1,80; CFR ≥ 35%. Belum dapat diubah dari Setup.
+
+**HPP per Kg ditunda** sampai modul Inventory ada — rumusnya membutuhkan
+tonase pembelian bahan baku dan produksi biji/tali yang hanya ada di tab
+SUMMARY INVENTORY & PENJUALAN.
+
+**Dashboard tidak menghitung sendiri.** Semua angkanya dirangkai backend dari
+laporan yang sama, sehingga KPI di Dashboard selalu sama dengan Laba Rugi,
+Neraca, dan Arus Kas untuk periode yang sama.
+
+---
+
+## 21. Keputusan Aset & Depresiasi
+
+**Jenis aset memetakan tiga akun sekaligus.** Aset, akumulasi, dan beban
+penyusutan ditentukan jenisnya (spesifikasi 5.13), sehingga pengguna hanya
+memilih jenis; jurnal penyusutannya tersusun sendiri, satu jurnal per jenis
+per bulan.
+
+**Garis lurus, residu 1% (parameter), berhenti di nilai residu.** Rumusnya
+persis tab ASET & DEPRESIASI. Penyusutan dijalankan per bulan secara
+berurutan dan hanya bulan terakhir yang dapat dibatalkan — sama seperti tutup
+buku, supaya akumulasinya tidak berlubang di tengah.
+
+**Tiga cara mencatat aset.** Saldo awal (tanpa jurnal, nilainya sudah ada di
+saldo awal neraca), beli tunai, atau beli bertermin. Kategori pembelian aset
+di modul Pembelian sengaja tetap tidak ada; aset dicatat di modulnya sendiri
+agar selalu punya kartu untuk disusutkan.
+
+---
+
+## 22. Keputusan Payroll dan Bagi Hasil
+
+**Rumus payroll disalin dari sheet.** Kotor = pokok + lembur + allowance +
+bonus; bersih = kotor − PPh 21 − BPJS; THP = bersih + pinjaman kasbon −
+potongan kasbon. PPh 21 dan BPJS diinput manual, seperti di sheet.
+
+**Kasbon adalah piutang karyawan, bukan beban.** Pinjaman mendebit `1-10103`,
+potongan mengkreditnya; sisa kasbon per karyawan dihitung dari situ. BPJS
+yang dipotong dari karyawan ditampung `2-10006 Biaya Masih Harus Dibayar`
+sampai disetorkan.
+
+**Dividen: Finance mengajukan, Direksi menyetujui.** Jurnal baru terbentuk
+saat disetujui — D Dividen · K Hutang PPh Final (pajak final) · K Kas. Check
+point kas tidak menghalangi pengajuan; ia peringatan untuk Direksi.
+
+**Dividen adalah akun kontra ekuitas.** Ini yang memaksa laporan membaca
+saldo dari sisi laporannya (aset: debit − kredit; liabilitas/ekuitas: kredit
+− debit), bukan dari saldo normal akun — kalau tidak, Dividen menambah ekuitas
+dan Retur Penjualan menambah pendapatan.
+
+---
+
+## 23. Keputusan Inventory
+
+**Kartu stok dalam Kg, otomatis dari dokumen.** Tagihan pembelian persediaan
+dan invoice penjualan mengisinya saat diposting; yang diinput manual hanya
+pemakaian bahan, hasil produksi, saldo awal, dan penyesuaian.
+
+**Pemakaian bahan dijurnal ke HPP saat dipakai; hasil produksi tidak
+dijurnal.** Mengikuti cara sheet: `5-10000 Pemakaian Bahan Baku` adalah HPP,
+dan nilai barang jadi dihitung dari HPP/kg × sisa Kg untuk ditampilkan, bukan
+diposting. Kapitalisasi WIP/barang jadi, bila kelak diperlukan, dapat
+dilakukan lewat jurnal manual akhir periode.
+
+**HPP per Kg = HPP Produksi tahun berjalan ÷ Kg hasil produksi.** Disandingkan
+dengan harga jual rata-rata per Kg dan beban operasional per Kg terjual.
+
+---
+
+## 24. Keputusan Setup, Hak Akses, dan Data Contoh
+
+**Saldo awal adalah satu jurnal bersumber `opening_balance`.** Akun diisi
+searah saldo normalnya; selisih ke `3-10006 Saldo Penyesuaian Awal Ekuitas`.
+Hanya akun neraca. Jurnalnya dapat dihapus di Jurnal Umum bila salah.
+
+**Tutup buku berurutan, buka kembali hanya Super Admin.** JournalPoster sudah
+menolak jurnal pada bulan tertutup sejak awal; yang ditambahkan adalah
+pintunya.
+
+**Hak akses ditegakkan backend, frontend hanya menyembunyikan.** Middleware
+`role:` per grup rute mengikuti matriks spesifikasi; sidebar dan tombol
+membaca matriks yang sama (`features/auth/permissions.ts`).
+
+**Data contoh hanya lingkungan lokal.** `DemoDataSeeder` menyemai saldo awal
+per 1 April 2026 (angka tab NERACA), aset dari tab ASET & DEPRESIASI,
+karyawan dan pemegang saham dari tab SETUP, lalu transaksi April–September
+lewat service yang sama dengan aplikasi. Sebelum dipakai sungguhan: reset,
+lalu input saldo awal dan master data sebenarnya. COA, produk, customer, dan
+supplier dari seeder lain tetap dipertahankan.

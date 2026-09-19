@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { toAmount } from '@/lib'
+import { toAmount, today } from '@/lib'
 import type { JournalEntryPayload } from '@/types'
 
 /** Satu baris jurnal pada form, masih berupa teks apa adanya dari input. */
@@ -19,7 +19,6 @@ const emptyLine = (key: number): JournalLineDraft => ({
   credit: '',
 })
 
-const today = () => new Date().toISOString().slice(0, 10)
 
 /**
  * State form jurnal manual, dipakai baik oleh jurnal sederhana maupun majemuk.

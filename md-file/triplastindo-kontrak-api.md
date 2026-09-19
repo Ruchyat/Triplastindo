@@ -274,15 +274,24 @@ berbeda isi. Nilai `source` yang mungkin:
 
 ---
 
-## 5. Master data — **Tersedia**
+## 5. Master data — **Tersedia, dapat disunting**
 
 | Metode | Endpoint | Keterangan |
 |---|---|---|
-| `GET` | `/api/customers` | Daftar customer. Filter: `is_active`, `search`. `with_balance=1` ikut menghitung piutang terbukanya. |
+| `GET` | `/api/customers` | Daftar customer. Filter: `is_active`, `search`. `with_balance=1` ikut piutang terbuka dan saldo deposit; `with_activity=1&year=` ikut total penjualan dan pembayaran tahun itu. |
+| `POST` `PUT` | `/api/customers`, `/api/customers/{id}` | Membuat dan menyunting. `code` boleh kosong — dibuatkan `CUS-005` mengikuti lebar kode yang ada. |
+| `GET` | `/api/suppliers` | Sama seperti customer; `with_balance` ikut utang terbuka, `with_activity` ikut pembelian dan pembayaran. |
+| `POST` `PUT` | `/api/suppliers`, `/api/suppliers/{id}` | Membuat dan menyunting. Kode otomatis `SUP-…`. |
 | `GET` | `/api/products` | Daftar produk. Filter: `is_active`, `category`. |
+| `GET` | `/api/product-categories` | Daftar kategori produk untuk dropdown. |
+| `POST` `PUT` | `/api/products`, `/api/products/{id}` | Membuat dan menyunting; `revenue_account_id` dan `inventory_account_id` opsional. Kode otomatis `PRD-0001`. Dipakai juga tombol *Produk Baru* di form pembelian. |
+| `GET` | `/api/accounts` | Daftar akun. Filter: `is_active`, `is_cash`, `category_id`, `group` (dipisah koma), `search`. |
+| `GET` | `/api/account-categories` | Kategori akun beserta kelompoknya. |
+| `POST` `PUT` | `/api/accounts`, `/api/accounts/{id}` | Membuat dan menyunting akun. Kode berpola `1-10003`; `is_cash` mengikuti kategori. Akun yang sudah dipakai jurnal tidak boleh ganti kode, kategori, atau saldo normal. |
 
-Perubahan master data menyusul bersama modul Setup. Yang dibutuhkan sekarang
-adalah daftarnya, untuk mengisi dropdown form transaksi.
+Master data tidak pernah dihapus — dokumen lama merujuk ke sana — melainkan
+dinonaktifkan lewat `is_active: false`; yang nonaktif tidak muncul di dropdown
+form transaksi.
 
 Produk membawa pemetaan akunnya sendiri:
 
@@ -725,57 +734,197 @@ Seluruhnya dijawab `422`:
 
 ---
 
-## 10. Buku Besar dan neraca saldo — *rencana*
+## 10. Pembayaran Supplier — **Tersedia**
 
 | Metode | Endpoint | Keterangan |
 |---|---|---|
+| `GET` | `/api/supplier-payments` | Daftar bukti, dipaginasi. Filter `from`, `to`, `supplier_id`, `status`, `search`. |
+| `POST` | `/api/supplier-payments` | Mencatat pembayaran. |
+| `GET` | `/api/supplier-payments/{id}` | Detail beserta alokasi dan jurnalnya. |
+| `POST` | `/api/supplier-payments/{id}/cancel` | Membatalkan; jurnal dibalik, utang dikembalikan. |
+
+Cermin dari Penerimaan Pembayaran (bagian 7). Nomornya `BKK/YYYY/MM/NNNN`.
+Isi permintaannya sama, dengan `supplier_id` dan `allocations[].purchase_bill_id`.
+
+Jurnalnya: **D** akun utang kategori tagihan · **K** Kas/Bank. Karena kategori
+tagihan yang berbeda memakai akun utang yang berbeda (`2-10000`, `2-10001`,
+`2-10002`), satu bukti dapat menghasilkan beberapa baris debit — dikelompokkan
+per akun utang.
+
+Daftar tagihan dan invoice menerima `status=outstanding` (gabungan belum
+bayar dan sebagian); halaman Utang dan Piutang memakainya.
+
+---
+
+## 11. Pengeluaran — **Tersedia**
+
+| Metode | Endpoint | Keterangan |
+|---|---|---|
+| `GET` | `/api/expenses` | Daftar bukti. Filter `from`, `to`, `expense_account_id`, `cash_account_id`, `status`, `search`. |
+| `GET` | `/api/expenses/summary` | `total`, `production` (kelompok HPP), `operational` (kelompok Beban), `count`. |
+| `POST` | `/api/expenses` | `date`, `expense_account_id`, `cash_account_id`, `description`, `amount`, `payee?`, `reference?`, `note?`. |
+| `GET` | `/api/expenses/{id}` | Detail beserta jurnal. |
+| `POST` | `/api/expenses/{id}/cancel` | Membatalkan; jurnal dibalik. |
+
+Nomornya `EXP/YYYY/MM/NNNN`. Jurnalnya: **D** akun beban · **K** Kas/Bank.
+Akun beban harus dari kelompok HPP, Beban, Beban Lain, atau Pajak;
+`GET /api/accounts?group=hpp,beban,beban_lain,pajak` mengembalikan daftarnya.
+
+---
+
+## 12. Kas & Bank — **Tersedia**
+
+| Metode | Endpoint | Keterangan |
+|---|---|---|
+| `GET` | `/api/cash-accounts` | Saldo tiap akun kas/bank aktif per `as_of` (bawaan hari ini), beserta `meta.total_balance`. |
+| `GET` | `/api/cash-mutations` | Baris jurnal yang menyentuh akun kas, dari modul mana pun. Filter `from`, `to`, `account_id`. |
+| `GET` | `/api/cash-transfers` | Daftar transfer. Filter `from`, `to`, `account_id`, `status`, `search`. |
+| `POST` | `/api/cash-transfers` | `date`, `from_account_id`, `to_account_id`, `amount`, `reference?`, `note?`. |
+| `GET` | `/api/cash-transfers/{id}` | Detail beserta jurnal. |
+| `POST` | `/api/cash-transfers/{id}/cancel` | Membatalkan; jurnal dibalik. |
+
+Nomor transfer `TRF/YYYY/MM/NNNN`. Jurnalnya: **D** akun tujuan · **K** akun
+asal; sumbernya `cash_transfer` agar Arus Kas mengabaikannya.
+
+---
+
+## 13. Buku Besar dan neraca saldo — **Tersedia**
+
+| Metode | Endpoint | Keterangan |
+|---|---|---|
+| `GET` | `/api/ledger` | Neraca saldo: saldo awal, mutasi, saldo akhir tiap akun yang bergerak. `from`, `to` (bawaan bulan berjalan). |
 | `GET` | `/api/ledger/{account}` | Mutasi satu akun beserta saldo berjalan. |
-| `GET` | `/api/trial-balance` | Neraca saldo per akun. |
-| `GET` | `/api/trial-balance/categories` | Neraca saldo per kategori. |
 
 ```json
 {
   "data": {
     "account": { "code": "1-10003", "name": "Bank BCA", "normal_balance": "debit" },
     "opening_balance": "50000000.00",
-    "rows": [
+    "total_debit": "1500000.00",
+    "total_credit": "0.00",
+    "closing_balance": "51500000.00",
+    "lines": [
       {
         "date": "2026-09-17",
-        "number": "JU/2026/09/0001",
+        "journal_number": "JU/2026/09/0001",
+        "source_label": "Penjualan",
+        "source_number": "INV/2026/09/0001",
         "description": "Penjualan tali tunai",
         "debit": "1500000.00",
         "credit": "0.00",
         "balance": "51500000.00"
       }
-    ],
-    "total_debit": "1500000.00",
-    "total_credit": "0.00",
-    "closing_balance": "51500000.00"
+    ]
   }
 }
 ```
 
 Saldo berjalan mengikuti saldo normal akun: akun Debit dihitung `debit − kredit`,
-akun Kredit dihitung `kredit − debit`. Perhitungannya ada di backend supaya
-seluruh laporan memakai angka yang sama.
+akun Kredit dihitung `kredit − debit`. Jurnal yang dihapus tidak ikut dihitung.
 
 ---
 
-## 11. Periode buku — *rencana*
+## 14. Laporan keuangan — **Tersedia**
 
 | Metode | Endpoint | Keterangan |
 |---|---|---|
-| `GET` | `/api/fiscal-periods` | Status tiap bulan. |
-| `POST` | `/api/fiscal-periods/close` | Menutup satu bulan. Super Admin. |
-| `POST` | `/api/fiscal-periods/reopen` | Membuka kembali. Super Admin. |
+| `GET` | `/api/reports/profit-loss` | `year`, `month`. Mengembalikan `period` (bulan itu) dan `ytd` (sejak Januari). |
+| `GET` | `/api/reports/balance-sheet` | `year`, `month`. Per akhir bulan itu, beserta `ratios` YTD. |
+| `GET` | `/api/reports/cash-flow` | `year`, `month`. `period`, `ytd`, dan `balance_sheet_cash` untuk rekonsiliasi. |
+| `GET` | `/api/dashboard` | `year`, `month`. KPI, rasio, saldo kas, ringkasan arus kas YTD, tren 12 bulan, realisasi utang-piutang. |
 
-Bulan yang belum pernah ditutup dianggap terbuka dan tidak memiliki baris di
-database. Aplikasi hanya mencatat bulan yang pernah ditutup, sehingga tidak
-perlu menyemai seluruh bulan di muka hanya agar jurnal dapat masuk.
+Susunannya mengikuti Google Sheet Finance Triplastindo:
+
+- **Laba Rugi**: Pendapatan − HPP Produksi = Laba Kotor; − Beban Operasional =
+  Laba Operasional; ± Pendapatan/Beban Lain = Laba Sebelum Pajak; − Pajak =
+  Laba Bersih. Tiap bagian memuat seluruh akun aktif kelompoknya, meski nol.
+- **Neraca**: Aset Lancar, Aset Tetap, Depresiasi & Amortisasi (kontra),
+  Liabilitas, Ekuitas. Laba yang belum ditutup disajikan sebagai dua baris
+  hitungan di Ekuitas: `retained_prior` (sebelum 1 Januari) dan `current_year`.
+- **Arus Kas** metode langsung. Kategorinya disimpulkan dari akun lawan tiap
+  jurnal kas: lawan aset tetap → investasi; lawan ekuitas atau Kewajiban
+  Jangka Panjang → pendanaan; selebihnya operasi. Transfer antar kas diabaikan.
+- **Rasio** dan standarnya dari sheet: Current Ratio ≥ 1,2; Quick Ratio ≥ 1,2;
+  GPM ≥ 30%; NPM ≥ 20%; DER ≤ 1,80; Cashflow to Revenue ≥ 35%; Asset Turnover
+  tanpa standar.
+
+HPP per Kg belum tersedia: memerlukan tonase produksi dari modul Inventory.
 
 ---
 
-## 12. Kontrak internal: cara modul memposting jurnal
+## 15. Pengaturan, periode buku, saldo awal, pengguna — **Tersedia**
+
+| Metode | Endpoint | Peran | Keterangan |
+|---|---|---|---|
+| `GET` `PUT` | `/api/settings` | semua / Super Admin | `company`, `parameters` (minimum_cash, dividend_tax_rate, residual_value_rate, fiscal_year), `ratio_standards`, `payment_methods`. Nilai bawaan di `config/triplastindo.php`. |
+| `GET` | `/api/fiscal-periods?year=` | finance, direksi | Status 12 bulan beserta jumlah jurnalnya. |
+| `POST` | `/api/fiscal-periods/close` | finance | `year`, `month`. Harus berurutan; bulan tertutup menolak jurnal dari modul mana pun. |
+| `POST` | `/api/fiscal-periods/reopen` | Super Admin | Hanya bulan tertutup terakhir. |
+| `GET` `POST` | `/api/opening-balances` | finance | `date`, `rows[].account_code`, `rows[].amount`. Jurnal `opening_balance`; selisih ke `3-10006`. Hanya akun neraca. |
+| `GET` `POST` `PUT` | `/api/users`, `/api/user-roles` | Super Admin | Pengguna dan perannya; Super Admin aktif terakhir tidak dapat diturunkan. |
+
+### Matriks peran (middleware `role:`)
+
+Super Admin selalu lolos. `finance` seluruh transaksi, jurnal, laporan, aset,
+inventory, master data, tutup buku. `hr` karyawan, payroll, slip. `direksi`
+membaca semuanya dan menyetujui dividen. `viewer` dashboard, laporan, dan
+dividen miliknya sendiri. Pelanggaran dijawab `403`.
+
+---
+
+## 16. Aset & depresiasi — **Tersedia**
+
+| Metode | Endpoint | Keterangan |
+|---|---|---|
+| `GET` `POST` `PUT` | `/api/asset-types` | Jenis aset: umur bawaan, akun aset, akumulasi, beban penyusutan. |
+| `GET` `POST` `PUT` | `/api/fixed-assets` | `code`, `name`, `asset_type_id`, `acquisition_date`, `in_use_date?`, `cost`, `residual_value?` (bawaan 1%), `useful_life_years?`, `opening_accumulated?`, `funding` (`opening` tanpa jurnal / `cash` D aset K kas / `payable` D aset K hutang usaha). |
+| `POST` | `/api/fixed-assets/{id}/dispose` | `date`, `proceeds?`, `cash_account_id?`. K aset, D akumulasi, D kas; selisih rugi `8-10002` atau laba `7-10099`. |
+| `GET` | `/api/fixed-assets/schedule?year=` | Rekap per bulan dan per jenis. |
+| `POST` `DELETE` | `/api/fixed-assets/depreciations` | `year`, `month`. Garis lurus per bulan, satu jurnal per jenis (D beban · K akumulasi); berhenti di nilai residu; batal hanya dari bulan terakhir. |
+
+---
+
+## 17. Karyawan & payroll — **Tersedia**
+
+| Metode | Endpoint | Keterangan |
+|---|---|---|
+| `GET` `POST` `PUT` | `/api/employees` | `nik`, `name`, `department` (produksi/kantor/lapangan → akun beban bawaan `5-11000`/`6-10001`/`6-10002`), `position`, `employment_status`, `basic_salary`, `allowance`. `with_loan=1` ikut sisa kasbon. |
+| `GET` `POST` | `/api/payroll-runs` | `year`, `month`, `payment_date`, `cash_account_id`. Draft terisi dari karyawan aktif. Nomor `PAY/…`. |
+| `PUT` | `/api/payroll-runs/{id}/items` | `items[]`: `employee_id` + komponen (`basic_salary`, `overtime`, `allowance`, `bonus`, `loan_advance`, `tax_pph21`, `bpjs_employment`, `bpjs_health`, `loan_deduction`). Kotor, bersih, THP dihitung server. |
+| `POST` | `/api/payroll-runs/{id}/post` | D beban gaji per akun · D Piutang Karyawan (kasbon) · K Hutang PPh 21 · K Biaya Masih Harus Dibayar (BPJS) · K Piutang Karyawan (potongan) · K Kas (THP). |
+| `POST` | `/api/payroll-runs/{id}/cancel` | Jurnal dibalik. |
+| `GET` | `/api/payroll-runs/summary?year=` | Per karyawan: kotor, bersih, THP, mutasi dan sisa kasbon. |
+
+---
+
+## 18. Bagi hasil — **Tersedia**
+
+| Metode | Endpoint | Peran | Keterangan |
+|---|---|---|---|
+| `GET` `POST` `PUT` | `/api/shareholders` | baca finance/direksi, tulis Super Admin | `name`, `shares`, `user_id?` (akun Viewer). |
+| `GET` | `/api/dividend-decisions/checkpoints?year=` | finance, direksi | 12 bulan: saldo kas akhir, minimum cash, aman/tidak, laba bulan & YTD, laba dibagikan, ditahan, DPR. |
+| `GET` `POST` | `/api/dividend-decisions` | finance mengajukan | `year`, `month`, `decision_date`, `total_amount`, `cash_account_id`, `tax_rate?`. Alokasi per saham dihitung server; Viewer hanya menerima alokasinya sendiri. |
+| `POST` | `/api/dividend-decisions/{id}/approve` | direksi | D Dividen `3-10004` · K Hutang PPh Final `2-10106` · K Kas (net). |
+| `POST` | `/api/dividend-decisions/{id}/cancel` | finance | Jurnal dibalik bila sudah disetujui. |
+
+---
+
+## 19. Inventory — **Tersedia**
+
+| Metode | Endpoint | Keterangan |
+|---|---|---|
+| `GET` | `/api/inventory/summary?year=` | Per produk per bulan: qty in/out/sisa, nilai persediaan (sisa × rata-rata), terjual (Kg, Rp), omset − HPP; plus `hpp_per_kg`. |
+| `GET` | `/api/stock-movements` | Kartu stok. Filter `product_id`, `from`, `to`. |
+| `POST` | `/api/stock-movements` | `type`: `consumption` (D akun pemakaian `5-1000x` · K persediaan, rata-rata bergerak, menolak melebihi stok), `production_in` (tanpa jurnal), `opening`, `adjustment`. |
+| `DELETE` | `/api/stock-movements/{id}` | Hanya mutasi tanpa dokumen dan tanpa jurnal. |
+
+Tagihan pembelian persediaan dan invoice penjualan mengisi kartu stok saat
+diposting dan menghapusnya saat dibatalkan. HPP per Kg = total HPP Produksi
+tahun berjalan ÷ Kg hasil produksi.
+
+---
+
+## 20. Kontrak internal: cara modul memposting jurnal
 
 Modul transaksi tidak menulis ke tabel jurnal secara langsung dan tidak
 memanggil endpoint di atas. Semuanya menyusun `JournalDraft` lalu menyerahkannya
@@ -813,14 +962,12 @@ app/Exceptions/JournalPostingException.php    alasan penolakan
 
 ---
 
-## 13. Modul transaksi berikutnya — *belum dirancang*
+## 21. Pola modul
 
-Pengeluaran, Kas & Bank, Utang, Piutang, Aset,
-Payroll, Bagi Hasil, dan Inventory menyusul dengan pola yang sama seperti
-Penjualan pada bagian 6: satu endpoint CRUD untuk dokumennya, satu service
-yang menerjemahkannya menjadi `JournalDraft`, dan posting yang tetap melewati
-`JournalPoster`. Peta jurnal tiap dokumen ada pada
-`triplastindo-finance-webapp.md` bagian 5.
+Seluruh modul memakai pola yang sama seperti Penjualan pada bagian 6: satu
+endpoint untuk dokumennya, satu service yang menerjemahkannya menjadi
+`JournalDraft`, dan posting yang tetap melewati `JournalPoster`. Modul baru
+mengikuti pola ini.
 
 Berkas yang dapat dijadikan contoh:
 

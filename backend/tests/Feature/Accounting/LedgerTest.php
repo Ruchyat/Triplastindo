@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Accounting;
 
+use App\Enums\UserRole;
 use App\Models\Account;
 use App\Models\Customer;
 use App\Models\Product;
@@ -27,7 +28,7 @@ class LedgerTest extends TestCase
         $this->seed(ChartOfAccountSeeder::class);
         $this->seed(MasterDataSeeder::class);
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->role(UserRole::Finance)->create());
     }
 
     public function test_saldo_awal_mutasi_dan_saldo_akhir_mengikuti_saldo_normal(): void

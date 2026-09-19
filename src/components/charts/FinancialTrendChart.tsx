@@ -1,13 +1,14 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { monthlyTrend } from '@/mocks/dashboard'
 
 export type TrendMode = 'revenue' | 'profit'
 
+export type TrendPoint = { month: string; revenue: number; expense: number; profit: number }
+
 /** Tren pendapatan, pengeluaran, dan laba bersih sepanjang tahun (dalam juta Rupiah). */
-export function FinancialTrendChart({ mode }: { mode: TrendMode }) {
+export function FinancialTrendChart({ mode, data }: { mode: TrendMode; data: TrendPoint[] }) {
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={monthlyTrend} margin={{ top: 5, right: 4, left: -18, bottom: 0 }}>
+      <AreaChart data={data} margin={{ top: 5, right: 4, left: -18, bottom: 0 }}>
         <defs>
           <linearGradient id="trendBlue" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#2563eb" stopOpacity={0.2} />

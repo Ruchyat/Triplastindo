@@ -1,37 +1,40 @@
 import { CalendarDays } from 'lucide-react'
-import { cn } from '@/lib'
-import { periodOptions } from '@/mocks/dashboard'
-import type { PeriodKey } from '@/types'
+import { Combobox } from '@/components/common'
+import { monthNames, type ReportPeriodState } from '@/features/reports/useReportPeriod'
 
-type Props = {
-  value: PeriodKey
-  onChange: (period: PeriodKey) => void
-}
+/** Pemilih periode Dashboard: bulan tertentu, atau akumulasi sejak Januari. */
+export function PeriodSelect({ state }: { state: ReportPeriodState }) {
+  const thisYear = new Date().getFullYear()
+  const years = Array.from({ length: 5 }, (_, i) => String(thisYear - 3 + i))
 
-/** Pemilih periode Dashboard: bulan tertentu atau akumulasi YTD. */
-export function PeriodSelect({ value, onChange }: Props) {
   return (
-    <div className="relative">
-      <CalendarDays
-        size={16}
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+    <div className="flex flex-wrap items-center gap-2">
+      <CalendarDays size={16} className="text-slate-400" />
+      <Combobox
+        className="w-36"
+        clearable={false}
+        aria-label="Bulan"
+        options={monthNames.map((name, index) => ({ value: String(index + 1), label: name }))}
+        value={String(state.month)}
+        onChange={value => state.setMonth(Number(value))}
       />
-      <select
-        aria-label="Pilih periode"
-        value={value}
-        onChange={event => onChange(event.target.value as PeriodKey)}
-        className={cn(
-          'h-10 appearance-none rounded-lg border border-slate-200 bg-white py-0 pl-9 pr-9',
-          'text-sm font-semibold text-slate-700 outline-none',
-          'focus:border-blue-400 focus:ring-2 focus:ring-blue-100',
-        )}
-      >
-        {periodOptions.map(option => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <Combobox
+        className="w-24"
+        clearable={false}
+        aria-label="Tahun"
+        options={years.map(year => ({ value: year, label: year }))}
+        value={String(state.year)}
+        onChange={value => state.setYear(Number(value))}
+      />
+      <label className="flex h-10 items-center gap-2 text-xs font-semibold text-slate-600">
+        <input
+          type="checkbox"
+          className="size-4 accent-blue-700"
+          checked={state.ytd}
+          onChange={event => state.setYtd(event.target.checked)}
+        />
+        YTD
+      </label>
     </div>
   )
 }

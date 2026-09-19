@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Setup;
 
+use App\Enums\UserRole;
 use App\Models\Product;
 use App\Models\User;
 use Database\Seeders\ChartOfAccountSeeder;
@@ -25,7 +26,7 @@ class ProductTest extends TestCase
         $this->seed(ChartOfAccountSeeder::class);
         $this->seed(MasterDataSeeder::class);
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->role(UserRole::Finance)->create());
     }
 
     public function test_produk_baru_mendapat_kode_otomatis_berurutan(): void

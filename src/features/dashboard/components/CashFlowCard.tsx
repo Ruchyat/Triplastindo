@@ -1,21 +1,26 @@
 import { Banknote, Landmark } from 'lucide-react'
 import { SectionHeader } from '@/components/common'
-import { cn, formatCurrency } from '@/lib'
-import { cashFlowOverview } from '@/mocks/dashboard'
+import { cn, formatCurrency, toAmount } from '@/lib'
+import type { ApiDashboard } from '@/types'
 
-const items = [
-  { label: 'Saldo Awal', value: cashFlowOverview.opening, tone: 'bg-slate-100 text-slate-600' },
-  { label: 'Uang Masuk', value: cashFlowOverview.incoming, tone: 'bg-emerald-50 text-emerald-700' },
-  { label: 'Uang Keluar', value: cashFlowOverview.outgoing, tone: 'bg-amber-50 text-amber-700' },
-  { label: 'Saldo Akhir', value: cashFlowOverview.closing, tone: 'bg-blue-50 text-blue-700' },
-]
+type Props = {
+  summary: ApiDashboard['cash_flow_ytd']
+  year: number
+}
 
 /** Ringkasan arus kas YTD: saldo awal, uang masuk dan keluar, saldo akhir. */
-export function CashFlowCard() {
+export function CashFlowCard({ summary, year }: Props) {
+  const items = [
+    { label: 'Saldo Awal', value: toAmount(summary.opening), tone: 'bg-slate-100 text-slate-600' },
+    { label: 'Uang Masuk', value: toAmount(summary.incoming), tone: 'bg-emerald-50 text-emerald-700' },
+    { label: 'Uang Keluar', value: toAmount(summary.outgoing), tone: 'bg-amber-50 text-amber-700' },
+    { label: 'Saldo Akhir', value: toAmount(summary.closing), tone: 'bg-blue-50 text-blue-700' },
+  ]
+
   return (
     <article className="card p-5 md:p-6">
       <div className="flex items-start justify-between">
-        <SectionHeader title="Ringkasan Arus Kas" subtitle="Year to date 2026" />
+        <SectionHeader title="Ringkasan Arus Kas" subtitle={`Year to date ${year}`} />
         <Landmark size={20} className="text-blue-700" />
       </div>
 

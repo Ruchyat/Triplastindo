@@ -11,7 +11,7 @@ import {
 } from '@/components/common'
 import { JournalPreview } from '@/components/financial'
 import { Button } from '@/components/ui/Button'
-import { toAmount } from '@/lib'
+import { toAmount, today } from '@/lib'
 import { expenseService } from '@/services/expenseService'
 import { ApiError } from '@/services/httpClient'
 import type { ApiAccount, ApiExpense } from '@/types'
@@ -24,7 +24,6 @@ type Props = {
   onDirtyChange?: (isDirty: boolean) => void
 }
 
-const today = () => new Date().toISOString().slice(0, 10)
 
 /**
  * Form bukti pengeluaran.

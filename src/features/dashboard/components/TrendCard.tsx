@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { SectionHeader } from '@/components/common'
 import { FinancialTrendChart, type TrendMode } from '@/components/charts/FinancialTrendChart'
-import { cn } from '@/lib'
+import { cn, toAmount } from '@/lib'
+import type { ApiDashboard } from '@/types'
+
+const monthShort = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 
 const modes: { value: TrendMode; label: string }[] = [
   { value: 'revenue', label: 'Pendapatan & Beban' },
@@ -16,16 +19,28 @@ const legends: Record<TrendMode, { color: string; label: string }[]> = {
   profit: [{ color: 'bg-emerald-600', label: 'Laba Bersih' }],
 }
 
-/** Grafik kinerja keuangan bulanan dengan pilihan tampilan. */
-export function TrendCard() {
+type Props = {
+  monthly: ApiDashboard['monthly']
+  year: number
+}
+
+/** Grafik kinerja keuangan bulanan dengan pilihan tampilan, dalam juta Rupiah. */
+export function TrendCard({ monthly, year }: Props) {
   const [mode, setMode] = useState<TrendMode>('revenue')
+
+  const data = monthly.map(row => ({
+    month: monthShort[row.month - 1],
+    revenue: Math.round(toAmount(row.revenue) / 1_000_000),
+    expense: Math.round(toAmount(row.expenses) / 1_000_000),
+    profit: Math.round(toAmount(row.net_profit) / 1_000_000),
+  }))
 
   return (
     <article className="card min-w-0 p-5 md:p-6">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <SectionHeader
           title="Overview Keuangan Full Year"
-          subtitle="Kinerja bulanan dalam juta Rupiah"
+          subtitle={`Kinerja bulanan ${year} dalam juta Rupiah`}
         />
         <div className="flex rounded-lg bg-slate-100 p-1 text-xs font-semibold">
           {modes.map(option => (
@@ -44,7 +59,7 @@ export function TrendCard() {
       </div>
 
       <div className="mt-6 h-[285px] w-full">
-        <FinancialTrendChart mode={mode} />
+        <FinancialTrendChart mode={mode} data={data} />
       </div>
 
       <div className="mt-3 flex gap-5 border-t border-slate-100 pt-4 text-xs">

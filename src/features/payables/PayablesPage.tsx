@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { routePaths, toPath } from '@/app/router'
 import { SubledgerView, type SubledgerFilters } from '@/features/subledger/components/SubledgerView'
 import { useAsync } from '@/hooks/useAsync'
@@ -10,7 +10,11 @@ import { purchaseService } from '@/services/purchaseService'
 /** Kartu utang per supplier, dibentuk dari tagihan pembelian bertermin. */
 export function PayablesPage() {
   const navigate = useNavigate()
-  const [filters, setFilters] = useState<SubledgerFilters>({ status: 'outstanding' })
+  const [params] = useSearchParams()
+  const [filters, setFilters] = useState<SubledgerFilters>({
+    status: 'outstanding',
+    partyId: Number(params.get('supplier')) || undefined,
+  })
 
   const load = useCallback(
     () =>

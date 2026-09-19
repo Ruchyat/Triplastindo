@@ -1,9 +1,10 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { formatNumber } from '@/lib'
-import type { InventoryMonth } from '@/types'
+
+export type StockTrendPoint = { month: string; qtyInKg: number; remainingKg: number }
 
 /** Tren kuantitas masuk dan saldo persediaan per bulan, dalam kilogram. */
-export function StockTrendChart({ data }: { data: InventoryMonth[] }) {
+export function StockTrendChart({ data }: { data: StockTrendPoint[] }) {
   const series = data.map(month => ({
     month: month.month,
     masuk: month.qtyInKg,

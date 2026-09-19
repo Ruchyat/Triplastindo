@@ -3,18 +3,22 @@
 namespace App\Http\Controllers\Setup;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Setup\AccountRequest;
 use App\Http\Resources\AccountCategoryResource;
 use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Models\AccountCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\ValidationException;
 
 /**
- * Chart of Accounts, hanya baca untuk saat ini.
+ * Chart of Accounts.
  *
- * Perubahan COA menyusul bersama modul Setup. Yang dibutuhkan sekarang adalah
- * daftarnya, untuk mengisi dropdown akun pada form transaksi dan jurnal.
+ * Akun tidak pernah dihapus — jurnal lama merujuk ke sana — melainkan
+ * dinonaktifkan. Kode, kategori, dan saldo normal akun yang sudah dipakai
+ * jurnal dikunci, karena mengubahnya menggeser angka laporan periode lalu.
  */
 class AccountController extends Controller
 {
@@ -53,5 +57,44 @@ class AccountController extends Controller
         return AccountCategoryResource::collection(
             AccountCategory::query()->orderBy('sort_order')->get()
         );
+    }
+
+    public function store(AccountRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $category = AccountCategory::query()->findOrFail($data['account_category_id']);
+
+        $account = Account::query()->create([
+            ...$data,
+            'is_cash' => $category->isCash(),
+            'is_active' => $data['is_active'] ?? true,
+        ]);
+
+        return (new AccountResource($account->load('category')))->response()->setStatusCode(201);
+    }
+
+    public function update(AccountRequest $request, Account $account): AccountResource
+    {
+        $data = $request->validated();
+
+        if ($account->journalLines()->exists()) {
+            $locked = array_filter([
+                'code' => $data['code'] !== $account->code,
+                'account_category_id' => (int) $data['account_category_id'] !== $account->account_category_id,
+                'normal_balance' => $data['normal_balance'] !== $account->normal_balance->value,
+            ]);
+
+            if ($locked !== []) {
+                throw ValidationException::withMessages(array_map(
+                    fn () => "Akun {$account->code} sudah dipakai jurnal; kode, kategori, dan saldo normalnya tidak dapat diubah.",
+                    $locked,
+                ));
+            }
+        }
+
+        $category = AccountCategory::query()->findOrFail($data['account_category_id']);
+        $account->update([...$data, 'is_cash' => $category->isCash()]);
+
+        return new AccountResource($account->load('category'));
     }
 }

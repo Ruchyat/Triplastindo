@@ -18,11 +18,10 @@ import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { useAsync } from '@/hooks/useAsync'
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges'
-import { formatCurrency, toAmount } from '@/lib'
+import { formatCurrency, toAmount, today } from '@/lib'
 import { cashBankService } from '@/services/cashBankService'
 import { ApiError } from '@/services/httpClient'
 
-const today = () => new Date().toISOString().slice(0, 10)
 
 /**
  * Halaman transfer antar akun kas/bank.

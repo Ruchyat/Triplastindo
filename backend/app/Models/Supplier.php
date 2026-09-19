@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DocumentStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,6 +39,22 @@ class Supplier extends Model
     protected function active(Builder $query): void
     {
         $query->where('is_active', true);
+    }
+
+    /** Total pembelian dan pembayaran dalam satu tahun, untuk halaman Supplier. */
+    #[Scope]
+    protected function withActivity(Builder $query, int $year): void
+    {
+        $bills = fn () => PurchaseBill::query()
+            ->whereColumn('purchase_bills.supplier_id', 'suppliers.id')
+            ->whereNull('purchase_bills.deleted_at')
+            ->whereNotIn('purchase_bills.status', [DocumentStatus::Draft->value, DocumentStatus::Cancelled->value])
+            ->whereYear('purchase_bills.date', $year);
+
+        $query
+            ->addSelect(['suppliers.*'])
+            ->selectSub($bills()->selectRaw('COALESCE(SUM(total), 0)'), 'total_purchases_sum')
+            ->selectSub($bills()->selectRaw('COALESCE(SUM(paid_amount), 0)'), 'paid_sum');
     }
 
     /**

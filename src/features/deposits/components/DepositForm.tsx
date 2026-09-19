@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Card, Combobox, Field, InfoNote, Input, NumberInput, Textarea } from '@/components/common'
 import { Button } from '@/components/ui/Button'
-import { formatCurrency, toAmount } from '@/lib'
+import { formatCurrency, toAmount, today } from '@/lib'
 import { depositService } from '@/services/depositService'
 import { ApiError } from '@/services/httpClient'
 import type { ApiAccount, ApiCustomer } from '@/types'
@@ -52,7 +52,7 @@ export function DepositForm({
 }: Props) {
   const text = copy[movement]
 
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(today)
   const [customerId, setCustomerId] = useState(initialCustomerId ? String(initialCustomerId) : '')
   const [amount, setAmount] = useState('')
   const [cashAccountId, setCashAccountId] = useState('')

@@ -49,10 +49,13 @@ enum JournalSource: string
         };
     }
 
-    /** Jurnal yang boleh disunting dan dihapus langsung oleh pengguna. */
+    /**
+     * Jurnal yang boleh dihapus langsung oleh pengguna: jurnal manual dan
+     * saldo awal — keduanya tidak punya dokumen asal yang perlu dibatalkan.
+     */
     public function isManual(): bool
     {
-        return $this === self::Manual;
+        return $this === self::Manual || $this === self::OpeningBalance;
     }
 
     public static function values(): array

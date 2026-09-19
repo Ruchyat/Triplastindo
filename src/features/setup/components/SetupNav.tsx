@@ -1,18 +1,19 @@
 import { Card } from '@/components/common'
 import { cn } from '@/lib'
-import { setupTabs, type SetupTabId } from '../tabs'
+import type { SetupTab, SetupTabId } from '../tabs'
 
 type Props = {
+  tabs: SetupTab[]
   active: SetupTabId
   onChange: (tab: SetupTabId) => void
 }
 
 /** Navigasi tab master data di sisi kiri halaman Setup. */
-export function SetupNav({ active, onChange }: Props) {
+export function SetupNav({ tabs, active, onChange }: Props) {
   return (
     <Card className="h-fit p-2">
       <nav>
-        {setupTabs.map(tab => (
+        {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}

@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { Card, Combobox, Field, InfoNote, Input, PageHeader } from '@/components/common'
 import { TabSwitch, type TabOption } from '@/components/ui/TabSwitch'
 import { useAsync } from '@/hooks/useAsync'
+import { monthEnd, monthStart } from '@/lib'
 import { masterDataService } from '@/services/masterDataService'
 import { AccountLedgerView } from './components/AccountLedgerView'
 import { TrialBalanceView } from './components/TrialBalanceView'
@@ -14,11 +15,6 @@ const tabs: TabOption<LedgerTab>[] = [
   { value: 'trial-balance', label: 'Neraca Saldo' },
 ]
 
-const monthStart = () => new Date().toISOString().slice(0, 8) + '01'
-const monthEnd = () => {
-  const now = new Date()
-  return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
-}
 
 /**
  * Halaman Buku Besar dan Neraca Saldo.

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { toAmount } from '@/lib'
+import { addDays, toAmount, today } from '@/lib'
 import type { ApiAccount, ApiCustomer, ApiProduct, ApiSettlementMethod, SalesInvoicePayload } from '@/types'
 
 /** Satu baris produk pada form, masih berupa teks apa adanya dari input. */
@@ -13,7 +13,6 @@ export type ItemDraft = {
 
 const emptyItem = (key: number): ItemDraft => ({ key, productId: '', quantity: '', unitPrice: '' })
 
-const today = () => new Date().toISOString().slice(0, 10)
 
 /**
  * State form invoice penjualan.
@@ -65,9 +64,7 @@ export function useSaleInvoiceForm(products: ApiProduct[], customers: ApiCustome
   /** Tanggal jatuh tempo dihitung dari termin, sama seperti di backend. */
   const dueDate = useMemo(() => {
     if (!isDeferred || !date) return null
-    const due = new Date(date)
-    due.setDate(due.getDate() + (Number(termDays) || 0))
-    return due.toISOString().slice(0, 10)
+    return addDays(date, Number(termDays) || 0)
   }, [date, termDays, isDeferred])
 
   function addItem() {

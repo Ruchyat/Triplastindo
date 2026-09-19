@@ -335,7 +335,7 @@ Pemilik dan manajemen dapat menggunakan sistem untuk memutuskan:
 
 ## 7. Posisi Pengerjaan Saat Ini
 
-Diperbarui 17 September 2026.
+Diperbarui 19 September 2026.
 
 Proyek sudah melewati tahap UI dan kini memiliki backend dengan autentikasi yang berfungsi.
 
@@ -372,6 +372,33 @@ Proyek sudah melewati tahap UI dan kini memiliki backend dengan autentikasi yang
 - PPN Keluaran pada invoice penjualan, dan PPN Masukan pada tagihan pembelian.
 - Modul Pembelian: tagihan supplier, kategori pembelian yang menentukan akun
   debit dan akun utangnya, serta pembentukan utang pada pembelian bertermin.
+- Pembayaran supplier: satu bukti melunasi beberapa tagihan, utang berkurang
+  sampai lunas, pembatalan mengembalikannya. Siklus akrual pembelian tertutup.
+- Halaman Utang dan Piutang dari dokumen sebenarnya, beserta umur piutang.
+- Jurnal Manual (sederhana dan majemuk) yang benar-benar tersimpan.
+- Buku Besar per akun dan Neraca Saldo, dihitung dari baris jurnal.
+- Pengeluaran biaya langsung ke akun beban, dan Kas & Bank: saldo per akun,
+  mutasi dari seluruh modul, dan transfer antar akun.
+- Setup: COA, customer, supplier, dan produk dapat ditambah dan disunting.
+  Produk baru juga dapat dibuat dari dalam form pembelian.
+- Laporan Laba Rugi, Neraca, Arus Kas, dan rasio keuangan dari data
+  sebenarnya, mengikuti susunan Google Sheet; Dashboard membaca angka yang sama.
+- Semua dropdown dapat dicari dengan mengetik, dan semua input angka
+  berformat ribuan otomatis.
+- Aset & Depresiasi: jenis aset dengan pemetaan akun, aset tetap (saldo awal,
+  beli tunai, beli bertermin), penyusutan garis lurus per bulan, pelepasan.
+- Karyawan, Payroll bulanan (rumus sheet), jurnal gaji per departemen, kasbon
+  ke Piutang Karyawan, slip gaji cetak.
+- Bagi Hasil: check point kas bulanan, pengajuan oleh Finance, persetujuan
+  Direksi, alokasi per saham dengan pajak final; Viewer melihat bagiannya.
+- Inventory: kartu stok Kg otomatis dari pembelian dan penjualan, input
+  pemakaian bahan (jurnal HPP) dan hasil produksi, summary per produk per
+  bulan, HPP per Kg.
+- Setup lengkap: saldo awal, jenis aset, karyawan, pemegang saham, jenis
+  pembayaran, tutup/buka buku, profil perusahaan, parameter & standar rasio,
+  pengguna & peran.
+- Hak akses per peran di backend (middleware) dan menu di frontend.
+- Data contoh April–September 2026 (`DemoDataSeeder`, hanya lingkungan lokal).
 
 **Lingkungan pengembangan**
 
@@ -381,20 +408,16 @@ Proyek sudah melewati tahap UI dan kini memiliki backend dengan autentikasi yang
 
 ### Belum tersedia
 
-- Pembayaran kepada supplier.
-- Modul Pengeluaran dan Kas & Bank.
-- Buku Besar dan neraca saldo dari data sebenarnya.
-- Jurnal Manual yang benar-benar menyimpan — endpointnya sudah ada, halamannya belum.
-- Kalkulasi akuntansi dan laporan dari data sebenarnya.
-- Matriks hak akses per modul.
-- Tutup buku dan approval.
-- Upload lampiran, export PDF, dan export Excel.
-- Audit trail.
+- Upload lampiran bukti, export PDF/Excel (tombol Print sudah ada).
+- Audit trail before/after per perubahan (yang ada: pembuat dan pembatal tiap
+  dokumen, jurnal pembalik yang tidak pernah dihapus).
+- Perhitungan PPh 21 dan BPJS otomatis (diinput manual, sesuai sheet).
 - Integrasi dengan bank atau layanan lain.
 
-Modul Penjualan sudah lengkap dan seluruhnya tersambung ke database: invoice,
-penerimaan pembayaran, dan deposit pelanggan. Jurnalnya langsung terlihat di
-Jurnal Umum. Halaman modul lainnya masih membaca mock data.
+Seluruh halaman sudah tersambung ke database; tidak ada lagi mock data.
+Akun contoh (kata sandi `password`): `finance@`, `hr@`, `direksi@`,
+`viewer@triplastindo.com`, plus Super Admin dari `.env`. Reset data contoh:
+`php artisan migrate:fresh --seed`.
 
 ---
 
@@ -426,7 +449,7 @@ Urutan implementasi yang disarankan:
 
 1. ~~Finalisasi UI dan alur pengguna.~~ **Selesai.**
 2. ~~Implementasikan autentikasi.~~ **Selesai** — login, token, dan akun Super Admin.
-3. Implementasikan hak akses per modul. Peran sudah tersimpan, tetapi belum membatasi apa pun.
+3. ~~Implementasikan hak akses per modul.~~ **Selesai** — middleware `role:` dan menu per peran.
 4. ~~Susun kontrak API dan rancangan database inti akuntansi.~~ **Selesai** — COA,
    jurnal, periode, dan `JournalPoster`; kontraknya di `triplastindo-kontrak-api.md`.
 5. ~~Implementasikan Penjualan beserta posting jurnal otomatisnya.~~ **Selesai** —
@@ -435,14 +458,15 @@ Urutan implementasi yang disarankan:
    Penjualan sudah tertutup: piutang terbentuk, berkurang, dan lunas.
 7. ~~Implementasikan Deposit Pelanggan.~~ **Selesai** — modul Penjualan tuntas.
 8. ~~Implementasikan Pembelian.~~ **Selesai** — tagihan supplier dan utangnya.
-9. Implementasikan pembayaran supplier, Pengeluaran, dan Kas & Bank.
-9. Implementasikan Setup dan master data agar dapat disunting pengguna.
-10. ~~Implementasikan Jurnal Umum dari data sebenarnya.~~ **Selesai.** Buku Besar menyusul.
-11. Implementasikan laporan keuangan.
-12. Implementasikan Utang, Piutang, Aset, dan tutup buku.
-13. Implementasikan Payroll, Slip Gaji, dan Bagi Hasil.
-14. Implementasikan Inventory dan Dashboard aktual.
-15. Validasi hasil aplikasi terhadap Google Sheet.
+9. ~~Implementasikan pembayaran supplier, Pengeluaran, dan Kas & Bank.~~ **Selesai.**
+9. ~~Implementasikan Setup dan master data agar dapat disunting pengguna.~~ **Selesai** — COA, customer, supplier, produk.
+10. ~~Implementasikan Jurnal Umum dan Buku Besar dari data sebenarnya.~~ **Selesai.**
+11. ~~Implementasikan laporan keuangan.~~ **Selesai** — Laba Rugi, Neraca, Arus Kas, rasio, Dashboard.
+12. ~~Implementasikan Utang, Piutang, Aset, dan tutup buku.~~ **Selesai.**
+13. ~~Implementasikan Payroll, Slip Gaji, dan Bagi Hasil.~~ **Selesai.**
+14. ~~Implementasikan Inventory (termasuk HPP per Kg).~~ **Selesai.**
+15. Validasi hasil aplikasi terhadap Google Sheet, lalu reset data contoh dan
+    input saldo awal sebenarnya.
 
 ---
 

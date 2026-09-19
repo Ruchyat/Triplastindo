@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react'
 import { useAsync } from '@/hooks/useAsync'
+import { currentMonth } from '@/lib'
 import { journalService, type JournalFilters } from '@/services/journalService'
 
 /** Bulan berjalan sebagai `YYYY-MM`, filter bawaan halaman. */
-const currentMonth = () => new Date().toISOString().slice(0, 7)
 
 /** Rentang tanggal awal dan akhir sebuah bulan. */
 function monthRange(month: string): { from: string; to: string } {

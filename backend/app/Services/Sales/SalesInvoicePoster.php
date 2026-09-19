@@ -17,6 +17,7 @@ use App\Services\Accounting\JournalLineDraft;
 use App\Services\Accounting\JournalPoster;
 use App\Services\Deposits\CustomerDepositPoster;
 use App\Services\DocumentNumberGenerator;
+use App\Services\Inventory\StockLedger;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -35,6 +36,7 @@ final class SalesInvoicePoster
         private readonly JournalPoster $journals = new JournalPoster,
         private readonly DocumentNumberGenerator $numbers = new DocumentNumberGenerator,
         private readonly CustomerDepositPoster $deposits = new CustomerDepositPoster,
+        private readonly StockLedger $stock = new StockLedger,
     ) {}
 
     /**
@@ -98,6 +100,9 @@ final class SalesInvoicePoster
             $invoice->forceFill(['journal_entry_id' => $entry->id, 'paid_amount' => $paid]);
             $invoice->forceFill(['status' => $invoice->statusForPayment()])->save();
 
+            // Kartu stok barang jadi berkurang sebesar kuantitas yang terjual.
+            $this->stock->recordSale($invoice);
+
             if (bccomp($appliedDeposit, '0', 2) > 0) {
                 $this->deposits->recordApplication($invoice, $appliedDeposit, $user);
             }
@@ -151,6 +156,8 @@ final class SalesInvoicePoster
                 'status' => DocumentStatus::Cancelled,
                 'paid_amount' => '0.00',
             ])->save();
+
+            $this->stock->forget('sales_invoice', $invoice->id);
 
             return $invoice->refresh();
         });

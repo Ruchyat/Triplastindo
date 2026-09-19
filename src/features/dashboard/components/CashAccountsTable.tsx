@@ -1,19 +1,34 @@
+import { Link } from 'react-router-dom'
+import { routePaths } from '@/app/router'
 import { SectionHeader } from '@/components/common'
-import { formatCurrency, formatRatioPercent } from '@/lib'
-import { activePeriod } from '@/mocks/session'
-import { cashAccounts, totalCashBalance } from '@/mocks/dashboard'
-import { formatDate } from '@/lib'
+import { formatCurrency, formatDate, formatRatioPercent, toAmount } from '@/lib'
+import type { ApiDashboard } from '@/types'
+
+type Props = {
+  accounts: ApiDashboard['cash']['accounts']
+  total: string
+  asOf: string
+}
 
 /** Saldo setiap akun kas dan bank beserta proporsinya terhadap total. */
-export function CashAccountsTable() {
+export function CashAccountsTable({ accounts, total, asOf }: Props) {
+  const totalCashBalance = toAmount(total)
+  const cashAccounts = accounts.map(account => ({
+    ...account,
+    type: account.name.toLowerCase().includes('bank') || account.name.toLowerCase().includes('giro') ? 'Bank' : 'Tunai',
+    balance: toAmount(account.balance),
+  }))
+
   return (
     <article className="card overflow-hidden">
       <div className="flex items-start justify-between p-5 md:p-6">
         <SectionHeader
           title="Saldo Kas & Bank"
-          subtitle={`Posisi saldo per ${formatDate(activePeriod.asOf)}`}
+          subtitle={`Posisi saldo per ${formatDate(asOf)}`}
         />
-        <button className="text-xs font-semibold text-blue-700">Lihat buku besar</button>
+        <Link to={routePaths.cashBank} className="text-xs font-semibold text-blue-700">
+          Lihat Kas &amp; Bank
+        </Link>
       </div>
 
       <div className="overflow-x-auto">
@@ -28,7 +43,7 @@ export function CashAccountsTable() {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {cashAccounts.map(account => (
-              <tr key={account.name} className="text-sm hover:bg-slate-50">
+              <tr key={account.id} className="text-sm hover:bg-slate-50">
                 <td className="px-6 py-3.5 font-semibold text-slate-800">{account.name}</td>
                 <td className="px-6 py-3.5">
                   <span className="rounded-md bg-slate-100 px-2 py-1 text-[10px] font-medium text-slate-600">

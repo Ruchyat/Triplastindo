@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\CashBank;
 
+use App\Enums\UserRole;
 use App\Models\Account;
 use App\Models\User;
 use Database\Seeders\ChartOfAccountSeeder;
@@ -26,7 +27,7 @@ class CashTransferTest extends TestCase
         $this->bank = Account::query()->where('code', '1-10003')->firstOrFail();
         $this->cash = Account::query()->where('code', '1-10001')->firstOrFail();
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->role(UserRole::Finance)->create());
     }
 
     public function test_transfer_mendebit_tujuan_dan_mengkredit_asal(): void

@@ -15,6 +15,7 @@ use App\Services\Accounting\JournalDraft;
 use App\Services\Accounting\JournalLineDraft;
 use App\Services\Accounting\JournalPoster;
 use App\Services\DocumentNumberGenerator;
+use App\Services\Inventory\StockLedger;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -32,6 +33,7 @@ final class PurchaseBillPoster
     public function __construct(
         private readonly JournalPoster $journals = new JournalPoster,
         private readonly DocumentNumberGenerator $numbers = new DocumentNumberGenerator,
+        private readonly StockLedger $stock = new StockLedger,
     ) {}
 
     /** @throws PurchaseBillException */
@@ -76,6 +78,9 @@ final class PurchaseBillPoster
             $bill->forceFill(['journal_entry_id' => $entry->id, 'paid_amount' => $paid]);
             $bill->forceFill(['status' => $bill->statusForPayment()])->save();
 
+            // Kartu stok mengikuti tagihan persediaan yang diposting.
+            $this->stock->recordPurchase($bill);
+
             return $bill->refresh();
         });
     }
@@ -113,6 +118,8 @@ final class PurchaseBillPoster
                 'status' => DocumentStatus::Cancelled,
                 'paid_amount' => '0.00',
             ])->save();
+
+            $this->stock->forget('purchase_bill', $bill->id);
 
             return $bill->refresh();
         });

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Sales;
 
 use App\Enums\DocumentStatus;
+use App\Enums\UserRole;
 use App\Models\Account;
 use App\Models\Customer;
 use App\Models\JournalEntry;
@@ -36,7 +37,7 @@ class SalesInvoiceTest extends TestCase
 
         $this->bank = Account::query()->where('code', '1-10003')->firstOrFail();
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->role(UserRole::Finance)->create());
     }
 
     public function test_invoice_tunai_langsung_lunas_dan_menambah_kas(): void

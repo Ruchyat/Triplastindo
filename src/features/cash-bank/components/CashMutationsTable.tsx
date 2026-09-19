@@ -3,15 +3,10 @@ import { Link } from 'react-router-dom'
 import { routePaths } from '@/app/router'
 import { Card, Combobox, EmptyState, FilterBar, InfoNote, Input, TableWrap } from '@/components/common'
 import { useAsync } from '@/hooks/useAsync'
-import { formatCurrencyOrDash, formatDate, toAmount } from '@/lib'
+import { formatCurrencyOrDash, formatDate, monthEnd, monthStart, toAmount } from '@/lib'
 import { cashBankService, type CashMutationFilters } from '@/services/cashBankService'
 import type { ApiAccount } from '@/types'
 
-const monthStart = () => new Date().toISOString().slice(0, 8) + '01'
-const monthEnd = () => {
-  const now = new Date()
-  return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
-}
 
 type Props = {
   accounts: ApiAccount[]

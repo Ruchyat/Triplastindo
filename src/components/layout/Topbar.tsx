@@ -1,7 +1,10 @@
 import { Bell, Menu, Search } from 'lucide-react'
 import { cn } from '@/lib'
-import { activePeriod } from '@/mocks/session'
 import { UserMenu } from './UserMenu'
+
+/** Bulan berjalan — periode buku yang menjadi bawaan semua laporan. */
+const currentPeriodLabel = () =>
+  new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' }).format(new Date())
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   return (
@@ -36,7 +39,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
             Periode Aktif
           </p>
-          <p className="text-xs font-semibold text-slate-700">{activePeriod.label}</p>
+          <p className="text-xs font-semibold text-slate-700">{currentPeriodLabel()}</p>
         </div>
 
         <button

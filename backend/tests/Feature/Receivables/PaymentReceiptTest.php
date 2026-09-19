@@ -3,6 +3,7 @@
 namespace Tests\Feature\Receivables;
 
 use App\Enums\DocumentStatus;
+use App\Enums\UserRole;
 use App\Models\Account;
 use App\Models\Customer;
 use App\Models\JournalEntry;
@@ -37,7 +38,7 @@ class PaymentReceiptTest extends TestCase
         $this->bank = Account::query()->where('code', '1-10003')->firstOrFail();
         $this->customer = Customer::query()->where('code', 'CUS-001')->firstOrFail();
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->role(UserRole::Finance)->create());
     }
 
     public function test_penerimaan_mengurangi_piutang_dan_melunaskan_invoice(): void

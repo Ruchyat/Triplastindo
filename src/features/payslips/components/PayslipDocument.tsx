@@ -1,12 +1,26 @@
 import { formatCurrency } from '@/lib'
-import { companyProfile } from '@/mocks/payroll'
-import type { Payslip, PayslipComponent } from '@/types'
+
+export type PayslipComponent = { label: string; amount: number }
+
+export type Payslip = {
+  employeeId: string
+  name: string
+  department: string
+  period: string
+  paymentDate: string
+  earnings: PayslipComponent[]
+  deductions: PayslipComponent[]
+  /** Pinjaman kasbon yang dicairkan bersama gaji; menambah THP, bukan pendapatan. */
+  loanAdvance: number
+}
+
+type Company = { name: string; address: string; email?: string }
 
 /** Slip gaji dalam layout A4 yang siap dicetak. */
-export function PayslipDocument({ payslip }: { payslip: Payslip }) {
+export function PayslipDocument({ payslip, company }: { payslip: Payslip; company: Company }) {
   const totalEarnings = sum(payslip.earnings)
   const totalDeductions = sum(payslip.deductions)
-  const takeHomePay = totalEarnings - totalDeductions
+  const takeHomePay = totalEarnings - totalDeductions + payslip.loanAdvance
 
   const identity = [
     { label: 'Nama', value: payslip.name },
@@ -19,9 +33,10 @@ export function PayslipDocument({ payslip }: { payslip: Payslip }) {
     <div className="mx-auto max-w-[800px] bg-white p-6 shadow-sm ring-1 ring-slate-200 md:p-10">
       <header className="flex justify-between border-b-2 border-slate-800 pb-6">
         <div>
-          <div className="text-xl font-black tracking-[.16em]">{companyProfile.name}</div>
+          <div className="text-xl font-black tracking-[.16em]">{company.name}</div>
           <p className="mt-2 max-w-sm text-[10px] leading-4 text-slate-500">
-            {companyProfile.address}
+            {company.address}
+            {company.email && <span className="block">{company.email}</span>}
           </p>
         </div>
         <div className="text-right">
@@ -54,7 +69,10 @@ export function PayslipDocument({ payslip }: { payslip: Payslip }) {
 
       <div className="grid gap-3 border-t-2 border-slate-800 pt-5 sm:grid-cols-3">
         <TotalBlock label="TOTAL PENDAPATAN" value={formatCurrency(totalEarnings)} />
-        <TotalBlock label="TOTAL POTONGAN" value={formatCurrency(totalDeductions)} />
+        <TotalBlock
+          label={payslip.loanAdvance > 0 ? 'TOTAL POTONGAN · KASBON CAIR' : 'TOTAL POTONGAN'}
+          value={payslip.loanAdvance > 0 ? `${formatCurrency(totalDeductions)} · +${formatCurrency(payslip.loanAdvance)}` : formatCurrency(totalDeductions)}
+        />
         <div className="rounded-lg bg-blue-700 p-3 text-white">
           <p className="text-[10px] text-blue-100">TAKE HOME PAY</p>
           <b className="mt-1 block text-lg">{formatCurrency(takeHomePay)}</b>

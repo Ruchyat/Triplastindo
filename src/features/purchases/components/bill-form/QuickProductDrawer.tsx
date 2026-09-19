@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Combobox, Field, InfoNote, Input } from '@/components/common'
+import { Combobox, Field, FieldError, InfoNote, Input } from '@/components/common'
 import { Button } from '@/components/ui/Button'
 import { Drawer } from '@/components/ui/Drawer'
 import { ApiError } from '@/services/httpClient'
@@ -121,9 +121,4 @@ export function QuickProductDrawer({ categories, purchaseCategory, onClose, onCr
       </div>
     </Drawer>
   )
-}
-
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null
-  return <p className="mt-1 text-[11px] text-rose-600">{message}</p>
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Payables;
 
 use App\Enums\DocumentStatus;
+use App\Enums\UserRole;
 use App\Models\Account;
 use App\Models\JournalEntry;
 use App\Models\Product;
@@ -37,7 +38,7 @@ class SupplierPaymentTest extends TestCase
         $this->bank = Account::query()->where('code', '1-10003')->firstOrFail();
         $this->supplier = Supplier::query()->where('code', 'SUP-002')->firstOrFail();
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->role(UserRole::Finance)->create());
     }
 
     public function test_pembayaran_mengurangi_utang_sampai_lunas(): void

@@ -1,12 +1,11 @@
-import { useState } from 'react'
-import { CircleDollarSign, Download, Receipt, TrendingUp, Wallet } from 'lucide-react'
-import { PageHeader } from '@/components/common'
+import { useCallback } from 'react'
+import { CircleDollarSign, Receipt, TrendingUp, Wallet } from 'lucide-react'
+import { InfoNote, PageHeader } from '@/components/common'
 import { StatCard } from '@/components/financial'
-import { Button } from '@/components/ui/Button'
-import { formatDate, formatPercent } from '@/lib'
-import { periodSummaries } from '@/mocks/dashboard'
-import { activePeriod } from '@/mocks/session'
-import type { PeriodKey } from '@/types'
+import { useAsync } from '@/hooks/useAsync'
+import { formatDate, formatPercent, toAmount } from '@/lib'
+import { reportService } from '@/services/reportService'
+import { useReportPeriod } from '@/features/reports/useReportPeriod'
 import { CashAccountsTable } from './components/CashAccountsTable'
 import { CashFlowCard } from './components/CashFlowCard'
 import { PeriodSelect } from './components/PeriodSelect'
@@ -14,16 +13,23 @@ import { RatioCard } from './components/RatioCard'
 import { RealizationCard } from './components/RealizationCard'
 import { TrendCard } from './components/TrendCard'
 
+const numberFormatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 })
+
 /**
  * Dashboard.
  *
- * Ringkasan kondisi keuangan untuk pemilik dan manajemen. Setiap angka di
- * sini harus dapat ditelusuri sampai ke transaksi asalnya melalui laporan
- * dan Jurnal Umum.
+ * Ringkasan kondisi keuangan untuk pemilik dan manajemen, dirangkai backend
+ * dari laporan yang sama — setiap angka di sini dapat ditelusuri ke Laba Rugi,
+ * Neraca, Arus Kas, lalu Jurnal Umum.
  */
 export function DashboardPage() {
-  const [period, setPeriod] = useState<PeriodKey>('sep')
-  const summary = periodSummaries[period]
+  const state = useReportPeriod()
+  const { year, month } = state
+
+  const load = useCallback(() => reportService.dashboard({ year, month }), [year, month])
+  const { data, error, isLoading } = useAsync(load)
+
+  const kpi = data ? (state.ytd ? data.ytd : data.period) : null
 
   return (
     <div className="space-y-6">
@@ -31,68 +37,71 @@ export function DashboardPage() {
         eyebrow="Overview / Dashboard"
         title="Dashboard"
         description="Ringkasan kondisi keuangan Triplastindo"
-        actions={
-          <>
-            <PeriodSelect value={period} onChange={setPeriod} />
-            <Button variant="outline">
-              <Download size={16} />
-              Unduh ringkasan
-            </Button>
-          </>
-        }
+        actions={<PeriodSelect state={state} />}
       />
+
+      {error && <InfoNote tone="red">{error}</InfoNote>}
+      {isLoading && !data && <p className="text-xs text-slate-500">Memuat ringkasan...</p>}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Total Revenue"
-          value={summary.revenue}
-          meta={`Asset turnover ${summary.turnover.toLocaleString('id-ID')}x`}
-          change={summary.revenueChange}
+          value={toAmount(kpi?.revenue)}
+          meta={
+            kpi?.asset_turnover != null
+              ? `Asset turnover ${numberFormatter.format(kpi.asset_turnover)}x`
+              : state.rangeLabel
+          }
+          change={kpi?.revenue_change ?? undefined}
           icon={TrendingUp}
           tone="blue"
         />
         <StatCard
           title="Total Expenses"
-          value={summary.expenses}
-          meta={`${formatPercent(summary.expenseRatio)} dari pendapatan`}
-          change={summary.expenseChange}
+          value={toAmount(kpi?.expenses)}
+          meta={kpi?.expense_ratio != null ? `${formatPercent(kpi.expense_ratio)} dari pendapatan` : '–'}
+          change={kpi?.expense_change ?? undefined}
           icon={Receipt}
           tone="amber"
         />
         <StatCard
           title="Net Profit"
-          value={summary.profit}
-          meta={`Net profit margin ${formatPercent(summary.npm)}`}
-          change={summary.profitChange}
+          value={toAmount(kpi?.net_profit)}
+          meta={
+            kpi?.net_profit_margin != null
+              ? `Net profit margin ${formatPercent(kpi.net_profit_margin)}`
+              : '–'
+          }
+          change={kpi?.profit_change ?? undefined}
           icon={CircleDollarSign}
           tone="emerald"
         />
         <StatCard
           title="Saldo Kas Usaha"
-          value={summary.cash}
-          meta={`Per ${formatDate(activePeriod.asOf)}`}
+          value={toAmount(data?.cash.total)}
+          meta={data ? `Per ${formatDate(data.cash.as_of)}` : '–'}
           icon={Wallet}
           tone="cyan"
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.55fr_1fr]">
-        <TrendCard />
-        <RatioCard />
-      </div>
+      {data && (
+        <>
+          <div className="grid gap-4 xl:grid-cols-[1.55fr_1fr]">
+            <TrendCard monthly={data.monthly} year={data.year} />
+            <RatioCard ratios={data.ratios} />
+          </div>
 
-      <CashFlowCard />
+          <CashFlowCard summary={data.cash_flow_ytd} year={data.year} />
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <RealizationCard type="payables" />
-        <RealizationCard type="receivables" />
-      </div>
+          <div className="grid gap-4 xl:grid-cols-2">
+            <RealizationCard type="payables" data={data.payables} year={data.year} />
+            <RealizationCard type="receivables" data={data.receivables} year={data.year} />
+          </div>
 
-      <CashAccountsTable />
-
-      <p className="pb-2 text-center text-[11px] text-slate-400">
-        Data dashboard merupakan data simulasi untuk kebutuhan tinjauan UI.
-      </p>
+          <CashAccountsTable accounts={data.cash.accounts} total={data.cash.total} asOf={data.cash.as_of} />
+        </>
+      )}
     </div>
   )
 }

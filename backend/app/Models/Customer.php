@@ -87,11 +87,23 @@ class Customer extends Model
     }
 
     /**
-     * Total nilai invoice yang belum lunas.
-     *
-     * Dihitung dari invoice, bukan dari saldo yang disimpan, supaya angkanya
-     * tidak pernah berbeda dengan dokumen yang mendasarinya.
+     * Total penjualan dan pembayaran yang diterima dalam satu tahun, untuk
+     * halaman Customer. Invoice draft dan batal tidak dihitung.
      */
+    #[Scope]
+    protected function withActivity(Builder $query, int $year): void
+    {
+        $invoices = fn () => SalesInvoice::query()
+            ->whereColumn('sales_invoices.customer_id', 'customers.id')
+            ->whereNull('sales_invoices.deleted_at')
+            ->whereNotIn('sales_invoices.status', [DocumentStatus::Draft->value, DocumentStatus::Cancelled->value])
+            ->whereYear('sales_invoices.date', $year);
+
+        $query
+            ->selectSub($invoices()->selectRaw('COALESCE(SUM(total), 0)'), 'total_sales_sum')
+            ->selectSub($invoices()->selectRaw('COALESCE(SUM(paid_amount), 0)'), 'paid_sum');
+    }
+
     /** Saldo deposit yang masih dapat dipakai, dihitung dari kartu depositnya. */
     public function depositBalance(): string
     {

@@ -1,12 +1,8 @@
 import { useCallback, useState } from 'react'
 import { useAsync } from '@/hooks/useAsync'
+import { monthEnd, monthStart } from '@/lib'
 import { expenseService, type ExpenseFilters } from '@/services/expenseService'
 
-const monthStart = () => new Date().toISOString().slice(0, 8) + '01'
-const monthEnd = () => {
-  const now = new Date()
-  return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
-}
 
 /** Daftar pengeluaran beserta ringkasannya. Bawaannya bulan berjalan. */
 export function useExpenses() {

@@ -19,8 +19,11 @@ class SupplierResource extends JsonResource
             'phone' => $this->phone,
             'email' => $this->email,
             'address' => $this->address,
+            'npwp' => $this->npwp,
             'payment_term_days' => $this->payment_term_days,
             'is_active' => $this->is_active,
+            'total_purchases' => $this->when($request->boolean('with_activity'), fn () => bcadd((string) ($this->total_purchases_sum ?? 0), '0', 2)),
+            'paid' => $this->when($request->boolean('with_activity'), fn () => bcadd((string) ($this->paid_sum ?? 0), '0', 2)),
             'open_payable' => $this->when(
                 $request->boolean('with_balance'),
                 fn () => $this->openPayable(),

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { toAmount } from '@/lib'
+import { addDays, toAmount, today } from '@/lib'
 import type {
   ApiProduct,
   ApiPurchaseCategory,
@@ -27,7 +27,6 @@ const emptyItem = (key: number): BillItemDraft => ({
   unitPrice: '',
 })
 
-const today = () => new Date().toISOString().slice(0, 10)
 
 /**
  * State form tagihan pembelian.
@@ -67,9 +66,7 @@ export function usePurchaseBillForm(
 
   const dueDate = useMemo(() => {
     if (!isDeferred || !date) return null
-    const due = new Date(date)
-    due.setDate(due.getDate() + (Number(termDays) || 0))
-    return due.toISOString().slice(0, 10)
+    return addDays(date, Number(termDays) || 0)
   }, [date, termDays, isDeferred])
 
   function addItem() {

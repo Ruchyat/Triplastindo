@@ -4,6 +4,7 @@ namespace Tests\Feature\Accounting;
 
 use App\Enums\JournalTagging;
 use App\Enums\PeriodStatus;
+use App\Enums\UserRole;
 use App\Exceptions\JournalPostingException;
 use App\Models\Account;
 use App\Models\FiscalPeriod;
@@ -32,7 +33,7 @@ class JournalPostingTest extends TestCase
         parent::setUp();
 
         $this->seed(ChartOfAccountSeeder::class);
-        $this->user = User::factory()->create();
+        $this->user = User::factory()->role(UserRole::Finance)->create();
     }
 
     public function test_jurnal_seimbang_tersimpan_dengan_nomor_urut_dan_tagging_kas(): void

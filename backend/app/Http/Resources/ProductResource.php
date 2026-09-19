@@ -18,7 +18,10 @@ class ProductResource extends JsonResource
             'category' => $this->category->value,
             'category_label' => $this->category->label(),
             'unit' => $this->unit,
+            'revenue_account_id' => $this->revenue_account_id,
+            'inventory_account_id' => $this->inventory_account_id,
             'revenue_account' => new AccountResource($this->whenLoaded('revenueAccount')),
+            'inventory_account' => new AccountResource($this->whenLoaded('inventoryAccount')),
             'is_active' => $this->is_active,
         ];
     }

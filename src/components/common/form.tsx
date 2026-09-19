@@ -39,3 +39,9 @@ export function Select({ className, children, ...props }: SelectHTMLAttributes<H
 export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea className={cn('field min-h-24 py-2', className)} {...props} />
 }
+
+/** Pesan penolakan backend untuk satu field, ditampilkan tepat di bawah inputnya. */
+export function FieldError({ message }: { message?: string }) {
+  if (!message) return null
+  return <p className="mt-1 text-[11px] text-rose-600">{message}</p>
+}

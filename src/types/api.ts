@@ -51,7 +51,9 @@ export type ApiAccount = {
   name: string
   /** `1-10003 · Bank BCA`, bentuk baku yang dipakai seluruh dropdown. */
   label: string
+  account_category_id: number
   category?: ApiAccountCategory
+  description: string | null
   normal_balance: 'debit' | 'kredit'
   normal_balance_label: string
   is_cash: boolean
@@ -68,11 +70,15 @@ export type ApiCustomer = {
   phone: string | null
   email: string | null
   address: string | null
+  npwp: string | null
   payment_term_days: number
   credit_limit: string | null
   is_active: boolean
   open_receivable?: string
   deposit_balance?: string
+  /** Hanya bila diminta dengan `with_activity`: penjualan dan pembayaran tahun itu. */
+  total_sales?: string
+  paid?: string
 }
 
 export type ApiProduct = {
@@ -82,7 +88,10 @@ export type ApiProduct = {
   category: string
   category_label: string
   unit: string
+  revenue_account_id: number | null
+  inventory_account_id: number | null
   revenue_account?: ApiAccount
+  inventory_account?: ApiAccount
   is_active: boolean
 }
 
@@ -91,12 +100,39 @@ export type ApiProductCategory = {
   label: string
 }
 
-/** Produk baru; kode boleh kosong, dibuatkan backend. */
+/** Produk baru atau suntingan; kode boleh kosong, dibuatkan backend. */
 export type ProductPayload = {
   name: string
   category: string
   unit: string
   code?: string | null
+  revenue_account_id?: number | null
+  inventory_account_id?: number | null
+  is_active?: boolean
+}
+
+export type CustomerPayload = {
+  code?: string | null
+  name: string
+  contact_name?: string | null
+  phone?: string | null
+  email?: string | null
+  address?: string | null
+  npwp?: string | null
+  payment_term_days: number
+  credit_limit?: string | null
+  is_active?: boolean
+}
+
+export type SupplierPayload = Omit<CustomerPayload, 'credit_limit'>
+
+export type AccountPayload = {
+  code: string
+  name: string
+  account_category_id: number
+  normal_balance: 'debit' | 'kredit'
+  description?: string | null
+  is_active?: boolean
 }
 
 // Jurnal -------------------------------------------------------------------
@@ -292,6 +328,462 @@ export type ApiCashMutation = {
   credit: string
 }
 
+// Laporan keuangan ---------------------------------------------------------
+
+export type ApiReportRow = {
+  account_id: number
+  code: string
+  name: string
+  category?: string
+  amount: string
+}
+
+export type ApiReportSection = {
+  key: string
+  title: string
+  side?: 'assets' | 'liabilities' | 'equity'
+  rows: ApiReportRow[]
+  total: string
+}
+
+export type ApiProfitLoss = {
+  from: string | null
+  to: string
+  sections: ApiReportSection[]
+  results: {
+    revenue: string
+    gross_profit: string
+    operating_profit: string
+    other_income_expense: string
+    profit_before_tax: string
+    tax: string
+    net_profit: string
+    total_expenses: string
+  }
+}
+
+export type ApiFinancialRatio = {
+  key: string
+  name: string
+  value: number | null
+  standard: number | null
+  direction: 'min' | 'max'
+  format: 'number' | 'percent'
+  verdict: 'good' | 'bad' | 'info'
+  hint: string
+}
+
+export type ApiBalanceSheet = {
+  as_of: string
+  sections: ApiReportSection[]
+  earnings: { retained_prior: string; current_year: string }
+  totals: {
+    current_assets: string
+    fixed_assets: string
+    accumulated_depreciation: string
+    total_assets: string
+    liabilities: string
+    current_liabilities: string
+    equity: string
+    total_liabilities_equity: string
+    difference: string
+    inventory: string
+    cash: string
+  }
+  ratios: ApiFinancialRatio[]
+}
+
+export type ApiCashFlowActivity = {
+  key: string
+  title: string
+  rows: { key: string; label: string; amount: string }[]
+  total: string
+}
+
+export type ApiCashFlow = {
+  from: string
+  to: string
+  activities: ApiCashFlowActivity[]
+  summary: {
+    opening_balance: string
+    net_operating: string
+    net_investing: string
+    net_financing: string
+    net_change: string
+    closing_balance: string
+    ledger_cash: string
+  }
+}
+
+export type ApiDashboardKpi = {
+  revenue: string
+  expenses: string
+  net_profit: string
+  asset_turnover: number | null
+  expense_ratio: number | null
+  net_profit_margin: number | null
+  revenue_change: number | null
+  expense_change: number | null
+  profit_change: number | null
+}
+
+export type ApiDashboard = {
+  year: number
+  month: number
+  as_of: string
+  period: ApiDashboardKpi
+  ytd: ApiDashboardKpi
+  ratios: ApiFinancialRatio[]
+  cash: {
+    as_of: string
+    total: string
+    accounts: { id: number; code: string; name: string; balance: string }[]
+  }
+  cash_flow_ytd: { opening: string; incoming: string; outgoing: string; closing: string }
+  monthly: { month: number; revenue: string; expenses: string; net_profit: string }[]
+  payables: ApiRealization
+  receivables: ApiRealization
+}
+
+export type ApiRealization = {
+  total: string
+  paid: string
+  outstanding: string
+  percentage: number | null
+}
+
+// Pengaturan, periode, pengguna ----------------------------------------------
+
+export type ApiSettings = {
+  company: { name: string; address: string; website: string; email: string; phone: string; npwp: string }
+  parameters: { minimum_cash: string; dividend_tax_rate: number; residual_value_rate: number; fiscal_year: number }
+  ratio_standards: Record<string, number>
+  payment_methods: string[]
+}
+
+export type ApiFiscalPeriod = {
+  year: number
+  month: number
+  status: 'open' | 'closed'
+  journal_count: number
+  closed_by: string | null
+  closed_at: string | null
+}
+
+export type ApiUser = {
+  id: number
+  name: string
+  email: string
+  role: 'super_admin' | 'finance' | 'hr' | 'direksi' | 'viewer'
+  role_label: string
+  is_active: boolean
+}
+
+export type UserPayload = {
+  name: string
+  email: string
+  password?: string | null
+  role: ApiUser['role']
+  is_active?: boolean
+}
+
+export type OpeningBalancePayload = {
+  date: string
+  rows: { account_code: string; amount: string }[]
+}
+
+// Aset tetap -----------------------------------------------------------------
+
+export type ApiAssetType = {
+  id: number
+  name: string
+  default_useful_life_years: number
+  is_depreciable: boolean
+  asset_account: string | null
+  accumulated_account: string | null
+  expense_account: string | null
+  asset_account_id: number
+  accumulated_account_id: number | null
+  expense_account_id: number | null
+  assets_count: number
+}
+
+export type ApiFixedAsset = {
+  id: number
+  code: string
+  name: string
+  asset_type_id: number
+  type?: { id: number; name: string; is_depreciable: boolean }
+  acquisition_date: string
+  in_use_date: string
+  cost: string
+  residual_value: string
+  useful_life_months: number
+  useful_life_years: number
+  yearly_depreciation: string
+  monthly_depreciation: string
+  months_in_use: number
+  opening_accumulated: string
+  accumulated_depreciation: string
+  book_value: string
+  status: 'active' | 'disposed'
+  disposed_at: string | null
+  note: string | null
+  depreciations?: { year: number; month: number; amount: string; journal_entry_id: number | null }[]
+}
+
+export type FixedAssetPayload = {
+  code: string
+  name: string
+  asset_type_id: number
+  acquisition_date: string
+  in_use_date?: string | null
+  cost: string
+  residual_value?: string | null
+  useful_life_years?: number | null
+  opening_accumulated?: string | null
+  funding?: 'opening' | 'cash' | 'payable'
+  cash_account_id?: number | null
+  note?: string | null
+}
+
+export type ApiDepreciationSchedule = {
+  year: number
+  months: { month: number; posted: boolean; total: string; assets: number }[]
+  by_type: { type: string; monthly_expected: string; yearly_expected: string; months: string[] }[]
+}
+
+// Karyawan & payroll ---------------------------------------------------------
+
+export type ApiEmployee = {
+  id: number
+  nik: string
+  name: string
+  department: 'produksi' | 'kantor' | 'lapangan'
+  department_label: string
+  position: string | null
+  employment_status: 'tetap' | 'kontrak' | 'harian'
+  employment_status_label: string
+  joined_at: string | null
+  basic_salary: string
+  allowance: string
+  expense_account_id: number
+  expense_account: string | null
+  bank_account: string | null
+  is_active: boolean
+  loan_balance: string | null
+}
+
+export type EmployeePayload = {
+  nik: string
+  name: string
+  department: ApiEmployee['department']
+  position?: string | null
+  employment_status: ApiEmployee['employment_status']
+  joined_at?: string | null
+  basic_salary: string
+  allowance?: string | null
+  expense_account_id?: number | null
+  bank_account?: string | null
+  is_active?: boolean
+}
+
+export const PAYROLL_AMOUNT_FIELDS = [
+  'basic_salary', 'overtime', 'allowance', 'bonus', 'loan_advance',
+  'tax_pph21', 'bpjs_employment', 'bpjs_health', 'loan_deduction',
+] as const
+
+export type PayrollAmountField = (typeof PAYROLL_AMOUNT_FIELDS)[number]
+
+export type ApiPayrollItem = Record<PayrollAmountField, string> & {
+  id: number
+  employee_id: number
+  employee: {
+    id: number
+    nik: string
+    name: string
+    department: string
+    department_label: string
+    position: string | null
+    employment_status: string
+  } | null
+  gross: string
+  net: string
+  take_home: string
+}
+
+export type ApiPayrollRun = {
+  id: number
+  number: string
+  year: number
+  month: number
+  payment_date: string
+  cash_account?: ApiAccount
+  status: 'draft' | 'posted' | 'cancelled'
+  total_gross: string
+  total_net: string
+  total_take_home: string
+  note: string | null
+  journal_entry?: ApiJournalEntry
+  created_by?: { id: number; name: string }
+  items_count?: number
+  items?: ApiPayrollItem[]
+}
+
+export type ApiPayrollSummary = {
+  year: number
+  employees: {
+    employee_id: number
+    name: string
+    department_label: string
+    months: number
+    gross: string
+    net: string
+    take_home: string
+    loan_advance: string
+    loan_deduction: string
+    loan_balance: string
+  }[]
+}
+
+// Bagi hasil -----------------------------------------------------------------
+
+export type ApiShareholder = {
+  id: number
+  name: string
+  shares: number
+  percentage: number
+  user_id: number | null
+  user_name: string | null
+  is_active: boolean
+}
+
+export type ApiDividendCheckpoint = {
+  year: number
+  month: number
+  quarter: string
+  cash_balance: string
+  minimum_cash: string
+  is_safe: boolean
+  net_profit: string
+  net_profit_ytd: string
+  decision_id: number | null
+  decision_status: 'draft' | 'approved' | 'cancelled' | null
+  decision_date: string | null
+  distributed: string
+  retained: string
+  payout_ratio: number | null
+}
+
+export type ApiDividendDecision = {
+  id: number
+  number: string
+  year: number
+  month: number
+  decision_date: string
+  total_amount: string
+  tax_rate: number
+  cash_account?: ApiAccount
+  status: 'draft' | 'approved' | 'cancelled'
+  cash_balance: string
+  minimum_cash: string
+  is_safe: boolean
+  net_profit: string
+  note: string | null
+  journal_entry?: ApiJournalEntry
+  proposed_by?: { id: number; name: string }
+  approved_by?: { id: number; name: string }
+  approved_at: string | null
+  allocations?: {
+    id: number
+    shareholder_id: number
+    shareholder: string | null
+    shares: number
+    percentage: number
+    gross: string
+    tax: string
+    net: string
+  }[]
+}
+
+export type DividendPayload = {
+  year: number
+  month: number
+  decision_date: string
+  total_amount: string
+  tax_rate?: number | null
+  cash_account_id: number
+  note?: string | null
+}
+
+// Inventory --------------------------------------------------------------------
+
+export type ApiInventoryMonth = {
+  month: number
+  qty_in: string
+  qty_out: string
+  qty_balance: string
+  inventory_value: string
+  sold_qty: string
+  sales_amount: string
+  cost_of_sold: string
+}
+
+export type ApiInventoryProduct = {
+  product_id: number
+  code: string
+  name: string
+  category: string
+  category_label: string
+  unit: string
+  inventory_account: string | null
+  opening_qty: string
+  average_cost: string
+  months: ApiInventoryMonth[]
+  totals: { qty_in: string; qty_out: string; qty_balance: string; inventory_value: string; sold_qty: string; sales_amount: string }
+}
+
+export type ApiHppPerKg = {
+  produced_kg: string
+  sold_kg: string
+  purchased_kg: string
+  purchased_amount: string
+  average_purchase_per_kg: string | null
+  material_per_kg: string | null
+  hpp_per_kg: string | null
+  operational_per_kg: string | null
+  selling_price_per_kg: string | null
+  margin_per_kg: string | null
+  hpp_ratio: number | null
+}
+
+export type ApiInventorySummary = { year: number; products: ApiInventoryProduct[]; hpp_per_kg: ApiHppPerKg }
+
+export type ApiStockMovement = {
+  id: number
+  date: string
+  product: { id: number; code: string; name: string; unit: string }
+  type: string
+  type_label: string
+  direction: 'in' | 'out'
+  quantity: string
+  unit_cost: string
+  amount: string
+  source_number: string | null
+  journal_number: string | null
+  description: string | null
+}
+
+export type StockMovementPayload = {
+  date: string
+  product_id: number
+  type: 'consumption' | 'production_in' | 'adjustment' | 'opening'
+  direction?: 'in' | 'out'
+  quantity: string
+  unit_cost?: string | null
+  description?: string | null
+}
+
 // Buku Besar & Neraca Saldo ------------------------------------------------
 
 /** Satu akun pada neraca saldo. Saldo mengikuti saldo normal akunnya. */
@@ -424,9 +916,13 @@ export type ApiSupplier = {
   phone: string | null
   email: string | null
   address: string | null
+  npwp: string | null
   payment_term_days: number
   is_active: boolean
   open_payable?: string
+  /** Hanya bila diminta dengan `with_activity`: pembelian dan pembayaran tahun itu. */
+  total_purchases?: string
+  paid?: string
 }
 
 /**

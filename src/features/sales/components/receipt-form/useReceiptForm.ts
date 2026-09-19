@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react'
-import { toAmount } from '@/lib'
+import { toAmount, today } from '@/lib'
 import type { ApiSalesInvoice, PaymentReceiptPayload } from '@/types'
 
-const today = () => new Date().toISOString().slice(0, 10)
 
 /**
  * State form penerimaan pembayaran.

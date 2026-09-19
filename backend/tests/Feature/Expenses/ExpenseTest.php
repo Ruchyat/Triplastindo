@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Expenses;
 
+use App\Enums\UserRole;
 use App\Models\Account;
 use App\Models\User;
 use Database\Seeders\ChartOfAccountSeeder;
@@ -23,7 +24,7 @@ class ExpenseTest extends TestCase
         $this->seed(ChartOfAccountSeeder::class);
         $this->bank = Account::query()->where('code', '1-10003')->firstOrFail();
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->role(UserRole::Finance)->create());
     }
 
     public function test_pengeluaran_mendebit_beban_dan_mengkredit_kas(): void
